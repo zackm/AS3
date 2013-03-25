@@ -8,13 +8,16 @@ else
 	CFLAGS = -g -DGL_GLEXT_PROTOTYPES -Iglut-3.7.6-bin
 	LDFLAGS = -lglut -lGLU
 endif
+
+SOURCES = main.cpp LocalGeo.cpp BezierPatch.cpp Scene.cpp
+OBJECTS = main.o LocalGeo.o BezierPatch.o Scene.o
 	
 RM = /bin/rm -f 
 all: main 
-main: main.o 
-	$(CC) $(CFLAGS) -o AS3 main.o $(LDFLAGS) 
-main.o: main.cpp
-	$(CC) $(CFLAGS) -c main.cpp -o main.o
+main: $(OBJECTS)
+	$(CC) $(CFLAGS) -o AS3 $(OBJECTS) $(LDFLAGS) 
+main.o:
+	$(CC) $(CFLAGS) -c $(SOURCES)
 clean: 
 	$(RM) *.o AS3
  
