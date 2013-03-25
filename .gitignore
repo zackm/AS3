@@ -2,7 +2,7 @@ glut-3.7.6-bin/
 Makefile
 AS3
 .DS_Store
-
+glut32.dll
 
 # Compiled Object files
 *.o
