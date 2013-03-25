@@ -1,6 +1,7 @@
 glut-3.7.6-bin/
 Makefile
 AS3
+as3
 .DS_Store
 glut32.dll
 
