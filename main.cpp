@@ -56,7 +56,7 @@ void myReshape(int w, int h) {
 	glViewport (0,0,viewport.w,viewport.h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-    
+    gluLookAt(0.0,1.0,0.2, 0.0,0.0,0.2, 0.0,0.0,1.0); // look into this later
 //    glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
 //    glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
 //	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
@@ -74,13 +74,26 @@ void myDisplay() {
 	// Start drawing
     for (int i = 0; i < s.patch_list.size(); i++) {
         BezierPatch bez = s.patch_list[i];
-        glColor3f(0.0f, 0.2f, i/s.patch_list.size());
-        glBegin(GL_POLYGON);
+        glColor3f(1.0f, 0.0f, 0.0f);
+        glBegin(GL_LINES); // for wireframing, pass GL_LINES
         glVertex3f(bez.patch[0][0][0], bez.patch[0][0][1], bez.patch[0][0][2]);
         glVertex3f(bez.patch[0][3][0], bez.patch[0][3][1], bez.patch[0][3][2]);
         glVertex3f(bez.patch[3][3][0], bez.patch[3][3][1], bez.patch[3][3][2]);
         glVertex3f(bez.patch[3][0][0], bez.patch[3][0][1], bez.patch[3][0][2]);
-        
+        glEnd();
+    }
+    
+    for (int i = 0; i < s.tri_list.size(); i++) {
+        glm::vec3 tri = s.tri_list[i];
+        glm::vec3 a,b,c;
+        a = s.geo_list[tri[0]].point;
+        b = s.geo_list[tri[1]].point;
+        c = s.geo_list[tri[2]].point;
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glBegin(GL_POLYGON); // for wireframing, pass GL_LINES
+        glVertex3f(a[0],a[1],a[2]);
+        glVertex3f(b[0],b[1],b[2]);
+        glVertex3f(c[0],c[1],c[2]);
         glEnd();
     }
     
@@ -185,29 +198,30 @@ int main(int argc, char* argv[]){
         for (int i = 0; i < s.patch_list.size(); i++) {
             s.subdivide_patch(s.patch_list[i]);
         }
+        s.make_tri_list();
 	}
     
-//    glutInit(&argc, argv);
-//    
-//    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-//    
-//	// Initalize theviewport size
-//	viewport.w = 400;
-//	viewport.h = 400;
-//    
-//	//The size and position of the window
-//	glutInitWindowSize(viewport.w, viewport.h);
-//	glutInitWindowPosition(0,0);
-//	glutCreateWindow(argv[0]);
-//    
-//	initScene();							// quick function to set up scene
-//    
-//	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
-//	glutReshapeFunc(myReshape);				// function to run when the window gets resized
-//    
-//	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
-//    
-//	glutMainLoop();
+    glutInit(&argc, argv);
+    
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    
+	// Initalize theviewport size
+	viewport.w = 800;
+	viewport.h = 800;
+    
+	//The size and position of the window
+	glutInitWindowSize(viewport.w, viewport.h);
+	glutInitWindowPosition(0,0);
+	glutCreateWindow(argv[0]);
+    
+	initScene();							// quick function to set up scene
+    
+	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
+	glutReshapeFunc(myReshape);				// function to run when the window gets resized
+    
+	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
+    
+	glutMainLoop();
     
 	return 0;
 }

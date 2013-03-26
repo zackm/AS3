@@ -29,3 +29,28 @@ void Scene::subdivide_patch(BezierPatch bez_patch) {
         }
     }
 }
+
+void Scene::make_tri_list() {
+    for (int i = 0; i < geo_list.size(); i++) {
+        if (i%4 == 0) {
+            if (i+1 < 16) {
+                glm::vec3 tri(i+1,i,i+4);
+                tri_list.push_back(tri);
+            }
+        } else if (i%4 == 3) {
+            if (i - 4 >= 0) {
+                glm::vec3 tri(i-1,i,i-4);
+                tri_list.push_back(tri);
+            }
+        } else {
+            if (i+1 < 16) {
+                glm::vec3 tri(i+1,i,i+4);
+                tri_list.push_back(tri);
+            }
+            if (i - 4 >= 0) {
+                glm::vec3 tri(i-1,i,i-4);
+                tri_list.push_back(tri);
+            }
+        }
+    }
+}
