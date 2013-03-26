@@ -48,30 +48,8 @@ void keyPressed(unsigned char key, int x, int y) {
 		exit(0);
 	}
 
-	//else if(key == 's'){
-	//	//toggle between flat and smooth shading
-	//}
-
-	//else if(key == 'w'){
-	//	//toggle between filled and wireframe
-	//}
-
-	//else if(key == 'arrow'){
-	//	//rotate object (depending on which arrow key is pressed
-	//  //I think we get to decide how much to rotate by. Same for translate and zoom.
-	//}
-
-	//else if(key == 'shift+arrow'){
-	//	//translate object
-	//}
-
-	//else if(key == '+'){
-	//	//zoom in
-	//}
-
-	//else if (key == '-'){
-	//	//zoom out
-	//}
+	else if(key == 'd'){
+	}
 }
 
 void myReshape(int w, int h) {
@@ -81,7 +59,7 @@ void myReshape(int w, int h) {
 	glViewport (0,0,viewport.w,viewport.h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-    gluLookAt(0.0,1.0,0.2, 0.0,0.0,0.2, 0.0,0.0,1.0); // look into this later
+    
 //    glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
 //    glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
 //	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
@@ -99,44 +77,14 @@ void myDisplay() {
 	// Start drawing
     for (int i = 0; i < s.patch_list.size(); i++) {
         BezierPatch bez = s.patch_list[i];
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
-        glPolygonMode(GL_BACK, GL_LINE);
-        
-        glBegin(GL_POLYGON); // for wireframing, pass GL_LINES
+        glColor3f(0.0f, 0.2f, i/s.patch_list.size());
+        glBegin(GL_POLYGON);
         glVertex3f(bez.patch[0][0][0], bez.patch[0][0][1], bez.patch[0][0][2]);
         glVertex3f(bez.patch[0][3][0], bez.patch[0][3][1], bez.patch[0][3][2]);
         glVertex3f(bez.patch[3][3][0], bez.patch[3][3][1], bez.patch[3][3][2]);
         glVertex3f(bez.patch[3][0][0], bez.patch[3][0][1], bez.patch[3][0][2]);
-        glEnd();
         
-        glPolygonMode(GL_FRONT, GL_FILL); // fill mode
-        glPolygonMode(GL_BACK, GL_FILL);
-    }
-    for (int j = 0; j < s.patch_list.size(); j++) {
-        BezierPatch bez = s.patch_list[j];
-        //cout<<"Tri List: "<<bez.tri_list.size()<<endl;
-        //cout<<"Geo List: "<<bez.geo_list.size()<<endl;
-        for (int i = 0; i < bez.tri_list.size(); i++) {
-            glm::vec3 tri = bez.tri_list[i];
-            glm::vec3 a,b,c;
-            a = bez.geo_list[tri[0]].point;
-            b = bez.geo_list[tri[1]].point;
-            c = bez.geo_list[tri[2]].point;
-            glColor3f(1.0f, 1.0f, 1.0f);
-            
-            glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
-            glPolygonMode(GL_BACK, GL_LINE);
-            
-            glBegin(GL_POLYGON);
-            glVertex3f(a[0],a[1],a[2]);
-            glVertex3f(b[0],b[1],b[2]);
-            glVertex3f(c[0],c[1],c[2]);
-            glEnd();
-            
-            glPolygonMode(GL_FRONT, GL_FILL); // fill mode
-            glPolygonMode(GL_BACK, GL_FILL);
-        }
+        glEnd();
     }
     
 	glFlush();
@@ -171,9 +119,8 @@ int main(int argc, char* argv[]){
 
 	string filename = argv[1];
 	float subdivision_param = atof(argv[2]); //takes on different meaning depending on whether using uniform or adapative (size vs error)
-    s.step = subdivision_param;
 
-	if (argc > 3){
+	if (argc==3){
 		//not checking third paramter. Assuming good input. Should handle case of bad input later
 		use_adaptive = true;
 	}
@@ -237,8 +184,7 @@ int main(int argc, char* argv[]){
 	if (use_adaptive){
 
 	}else{
-        s.subdivide_patch();
-        s.make_tri_list();
+
 	}
     
     glutInit(&argc, argv);
@@ -246,8 +192,8 @@ int main(int argc, char* argv[]){
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     
 	// Initalize theviewport size
-	viewport.w = 800;
-	viewport.h = 800;
+	viewport.w = 400;
+	viewport.h = 400;
     
 	//The size and position of the window
 	glutInitWindowSize(viewport.w, viewport.h);

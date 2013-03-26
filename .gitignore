@@ -1,4 +1,7 @@
 glut-3.7.6-bin/
+Debug/
+glm/
+oldfiles/
 Makefile
 AS3
 as3
@@ -14,5 +17,31 @@ glut32.dll
 # Test Files
 *.bez
 
+# log files
+*.txt
+
 # XCode Files
 *.1
+
+#documents
+*.pdf
+
+#VS files
+*.sdf
+*.opensdf
+*.sln
+*.suo
+*.vcxproj
+*.filters
+*.user
+
+#glut
+glut.def
+
+
+
+
+
+
+
+

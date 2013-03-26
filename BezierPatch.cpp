@@ -39,8 +39,8 @@ LocalTangent BezierPatch::curve_interp(BezierCurve bez_cur,float u) {
 LocalGeo BezierPatch::patch_interp(float u, float v) {
     BezierCurve vcurve, ucurve;
     for (int i = 0; i < 4; i++) {
-        vcurve[i] = curve_interp(v_curve(i), v).point;
-        ucurve[i] = curve_interp(u_curve(i), u).point;
+        vcurve[i] = curve_interp(v_curve(i), u).point;
+        ucurve[i] = curve_interp(u_curve(i), v).point;
     }
     LocalTangent u_local, v_local;
     v_local = curve_interp(vcurve, v);
@@ -52,7 +52,8 @@ LocalGeo BezierPatch::patch_interp(float u, float v) {
     }
     
     // Assuming v_local.point and u_local.point are equal
-    return LocalGeo(v_local.point,n);
+	LocalGeo l_geo(v_local.point,n);
+    return l_geo;
 }
 
 BezierCurve BezierPatch::u_curve(int i){
