@@ -116,8 +116,9 @@ int main(int argc, char* argv[]){
 
 	string filename = argv[1];
 	float subdivision_param = atof(argv[2]); //takes on different meaning depending on whether using uniform or adapative (size vs error)
+    s.step = subdivision_param;
 
-	if (argc==3){
+	if (argc > 3){
 		//not checking third paramter. Assuming good input. Should handle case of bad input later
 		use_adaptive = true;
 	}
@@ -181,30 +182,32 @@ int main(int argc, char* argv[]){
 	if (use_adaptive){
 
 	}else{
-
+        for (int i = 0; i < s.patch_list.size(); i++) {
+            s.subdivide_patch(s.patch_list[i]);
+        }
 	}
     
-    glutInit(&argc, argv);
-    
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-    
-	// Initalize theviewport size
-	viewport.w = 400;
-	viewport.h = 400;
-    
-	//The size and position of the window
-	glutInitWindowSize(viewport.w, viewport.h);
-	glutInitWindowPosition(0,0);
-	glutCreateWindow(argv[0]);
-    
-	initScene();							// quick function to set up scene
-    
-	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
-	glutReshapeFunc(myReshape);				// function to run when the window gets resized
-    
-	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
-    
-	glutMainLoop();
+//    glutInit(&argc, argv);
+//    
+//    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+//    
+//	// Initalize theviewport size
+//	viewport.w = 400;
+//	viewport.h = 400;
+//    
+//	//The size and position of the window
+//	glutInitWindowSize(viewport.w, viewport.h);
+//	glutInitWindowPosition(0,0);
+//	glutCreateWindow(argv[0]);
+//    
+//	initScene();							// quick function to set up scene
+//    
+//	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
+//	glutReshapeFunc(myReshape);				// function to run when the window gets resized
+//    
+//	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
+//    
+//	glutMainLoop();
     
 	return 0;
 }

@@ -22,8 +22,11 @@
 class Scene {
 public:
     vector<BezierPatch> patch_list;
-    
-    void add_patch(BezierPatch);
+    vector<LocalGeo> geo_list;
+    float step;
     
     Scene(void){};
+    void add_patch(BezierPatch);
+    void add_geo(LocalGeo);
+    void subdivide_patch(BezierPatch);
 };

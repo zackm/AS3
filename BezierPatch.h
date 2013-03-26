@@ -4,6 +4,15 @@
 #pragma once
 #include <vector>
 
+#pragma once
+#include "LocalTangent.h"
+
+#pragma once
+#include "BezierCurve.h"
+
+#pragma once
+#include "LocalGeo.h"
+
 using namespace std;
 
 class BezierPatch{
@@ -17,10 +26,11 @@ public:
 
     int size();
     
-	void curve_interp(float,float*,float*,glm::vec4);
-	void patch_interp(float,float,glm::vec3*,glm::vec3*);
+	LocalTangent curve_interp(BezierCurve,float);
+	LocalGeo patch_interp(float,float);
     
-//	vector<glm::vec3> u_curve(int);
-//	vector<glm::vec3> v_curve(int);
+	BezierCurve u_curve(int);
+	BezierCurve v_curve(int);
+    
 };
 

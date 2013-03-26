@@ -9,8 +9,8 @@ else
 	LDFLAGS = -lglut -lGLU
 endif
 
-SOURCES = main.cpp LocalGeo.cpp BezierPatch.cpp Scene.cpp
-OBJECTS = main.o LocalGeo.o BezierPatch.o Scene.o
+SOURCES = main.cpp LocalGeo.cpp BezierPatch.cpp Scene.cpp BezierCurve.cpp LocalTangent.cpp
+OBJECTS = main.o LocalGeo.o BezierPatch.o Scene.o BezierCurve.o LocalTangent.o
 	
 RM = /bin/rm -f 
 all: main 

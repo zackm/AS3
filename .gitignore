@@ -11,7 +11,7 @@ glut32.dll
 # Compiled Static libraries
 *.a
 
-# Test FIles
+# Test Files
 *.bez
 
 # XCode Files
