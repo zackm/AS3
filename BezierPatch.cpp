@@ -72,3 +72,48 @@ BezierCurve BezierPatch::v_curve(int i){
     cur.push_back(patch[3][i]);
 	return BezierCurve(cur);
 }
+
+void BezierPatch::add_geo(LocalGeo geo) {
+    geo_list.push_back(geo);
+}
+
+void BezierPatch::subdivide_patch(float step) {
+    float epsilon = 0.001f;
+    float numdiv = ((1 + epsilon) / step);
+    LocalGeo current_geo;
+    
+    for (int iu = 0; iu < numdiv; iu++) {
+        float u = iu * step;
+        
+        for (int iv = 0; iv < numdiv; iv++) {
+            float v = iv * step;
+            current_geo = patch_interp(u,v);
+            add_geo(current_geo);
+        }
+    }
+}
+
+void BezierPatch::make_tri_list() {
+    for (int i = 0; i < geo_list.size(); i++) {
+        if (i%5 == 0) {
+            if (i+5 < 25) {
+                glm::vec3 tri(i+1,i,i+5);
+                tri_list.push_back(tri);
+            }
+        } else if (i%5 == 4) {
+            if (i - 5 >= 0) {
+                glm::vec3 tri(i-1,i,i-5);
+                tri_list.push_back(tri);
+            }
+        } else {
+            if (i+5 < 25) {
+                glm::vec3 tri(i+1,i,i+5);
+                tri_list.push_back(tri);
+            }
+            if (i - 5 >= 0) {
+                glm::vec3 tri(i-1,i,i-5);
+                tri_list.push_back(tri);
+            }
+        }
+    }
+}

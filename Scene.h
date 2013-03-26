@@ -24,15 +24,10 @@ public:
     vector<BezierPatch> patch_list;
     vector<LocalGeo> geo_list;
     vector<glm::vec3> tri_list;
-//    0  1  2  3
-//    4  5  6  7
-//    8  9  10 11
-//    12 13 14 15
     float step;
     
     Scene(void){};
     void add_patch(BezierPatch);
-    void add_geo(LocalGeo);
-    void subdivide_patch(BezierPatch);
+    void subdivide_patch();
     void make_tri_list();
 };

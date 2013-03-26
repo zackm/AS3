@@ -75,26 +75,43 @@ void myDisplay() {
     for (int i = 0; i < s.patch_list.size(); i++) {
         BezierPatch bez = s.patch_list[i];
         glColor3f(1.0f, 0.0f, 0.0f);
-        glBegin(GL_LINES); // for wireframing, pass GL_LINES
+        glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
+        glPolygonMode(GL_BACK, GL_LINE);
+        
+        glBegin(GL_POLYGON); // for wireframing, pass GL_LINES
         glVertex3f(bez.patch[0][0][0], bez.patch[0][0][1], bez.patch[0][0][2]);
         glVertex3f(bez.patch[0][3][0], bez.patch[0][3][1], bez.patch[0][3][2]);
         glVertex3f(bez.patch[3][3][0], bez.patch[3][3][1], bez.patch[3][3][2]);
         glVertex3f(bez.patch[3][0][0], bez.patch[3][0][1], bez.patch[3][0][2]);
         glEnd();
+        
+        glPolygonMode(GL_FRONT, GL_FILL); // fill mode
+        glPolygonMode(GL_BACK, GL_FILL);
     }
-    
-    for (int i = 0; i < s.tri_list.size(); i++) {
-        glm::vec3 tri = s.tri_list[i];
-        glm::vec3 a,b,c;
-        a = s.geo_list[tri[0]].point;
-        b = s.geo_list[tri[1]].point;
-        c = s.geo_list[tri[2]].point;
-        glColor3f(1.0f, 1.0f, 1.0f);
-        glBegin(GL_POLYGON); // for wireframing, pass GL_LINES
-        glVertex3f(a[0],a[1],a[2]);
-        glVertex3f(b[0],b[1],b[2]);
-        glVertex3f(c[0],c[1],c[2]);
-        glEnd();
+    for (int j = 0; j < s.patch_list.size(); j++) {
+        BezierPatch bez = s.patch_list[j];
+        cout<<"Tri List: "<<bez.tri_list.size()<<endl;
+        cout<<"Geo List: "<<bez.geo_list.size()<<endl;
+        for (int i = 0; i < bez.tri_list.size(); i++) {
+            glm::vec3 tri = bez.tri_list[i];
+            glm::vec3 a,b,c;
+            a = bez.geo_list[tri[0]].point;
+            b = bez.geo_list[tri[1]].point;
+            c = bez.geo_list[tri[2]].point;
+            glColor3f(1.0f, 1.0f, 1.0f);
+            
+            glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
+            glPolygonMode(GL_BACK, GL_LINE);
+            
+            glBegin(GL_POLYGON);
+            glVertex3f(a[0],a[1],a[2]);
+            glVertex3f(b[0],b[1],b[2]);
+            glVertex3f(c[0],c[1],c[2]);
+            glEnd();
+            
+            glPolygonMode(GL_FRONT, GL_FILL); // fill mode
+            glPolygonMode(GL_BACK, GL_FILL);
+        }
     }
     
 	glFlush();
@@ -195,9 +212,7 @@ int main(int argc, char* argv[]){
 	if (use_adaptive){
 
 	}else{
-        for (int i = 0; i < s.patch_list.size(); i++) {
-            s.subdivide_patch(s.patch_list[i]);
-        }
+        s.subdivide_patch();
         s.make_tri_list();
 	}
     
