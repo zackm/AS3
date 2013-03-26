@@ -34,6 +34,6 @@ public:
 	BezierCurve v_curve(int);
     void add_geo(LocalGeo);
     void subdivide_patch(float);
-    void make_tri_list();
+    void make_tri_list(float);
 };
 
