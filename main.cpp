@@ -63,6 +63,7 @@ void keyPressed(unsigned char key, int x, int y) {
 
 	//else if(key == 'shift+arrow'){
 	//	//translate object
+	//	//same as above
 	//}
 
 	//else if(key == '+'){
