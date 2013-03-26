@@ -82,7 +82,6 @@ void BezierPatch::subdivide_patch(float step) {
     float epsilon = 0.001f;
     float numdiv = ((1 + epsilon) / step);
     LocalGeo current_geo;
-    
     for (int iu = 0; iu < numdiv; iu++) {
         float u = iu * step;
         
@@ -94,25 +93,28 @@ void BezierPatch::subdivide_patch(float step) {
     }
 }
 
-void BezierPatch::make_tri_list() {
+void BezierPatch::make_tri_list(float step) {
+    int row = glm::floor((1 / step) + 1);
+    float block = row * row;
+    
     for (int i = 0; i < geo_list.size(); i++) {
-        if (i%5 == 0) {
-            if (i+5 < 25) {
-                glm::vec3 tri(i+1,i,i+5);
+        if (i%row == 0) {
+            if (i+row < block) {
+                glm::vec3 tri(i+1,i,i+row);
                 tri_list.push_back(tri);
             }
-        } else if (i%5 == 4) {
-            if (i - 5 >= 0) {
-                glm::vec3 tri(i-1,i,i-5);
+        } else if (i%row == row - 1) {
+            if (i - row >= 0) {
+                glm::vec3 tri(i-1,i,i-row);
                 tri_list.push_back(tri);
             }
         } else {
-            if (i+5 < 25) {
-                glm::vec3 tri(i+1,i,i+5);
+            if (i+row < block) {
+                glm::vec3 tri(i+1,i,i+row);
                 tri_list.push_back(tri);
             }
-            if (i - 5 >= 0) {
-                glm::vec3 tri(i-1,i,i-5);
+            if (i - row >= 0) {
+                glm::vec3 tri(i-1,i,i-row);
                 tri_list.push_back(tri);
             }
         }

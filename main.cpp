@@ -37,7 +37,7 @@ public:
 // Global Variables
 //****************************************************
 Viewport	viewport;
-Scene s;
+Scene scene;
 unsigned char keyarray[];
 unsigned const int SPACE = 0;
 unsigned const int S = 1;
@@ -191,7 +191,7 @@ void myReshape(int w, int h) {
 
 	gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
 		CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]); // look into this later
-
+	//    glOrtho(-20,20,-20,20,20,-20); // elephant view
 	//    glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
 	//    glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
 	//	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
@@ -206,13 +206,13 @@ void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);
 
 	// Start drawing
-	for (int i = 0; i < s.patch_list.size(); i++) {
-		BezierPatch bez = s.patch_list[i];
+	for (int i = 0; i < scene.patch_list.size(); i++) {
+		BezierPatch bez = scene.patch_list[i];
 		glColor3f(1.0f, 0.0f, 0.0f);
 		glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
 		glPolygonMode(GL_BACK, GL_LINE);
 
-		glBegin(GL_POLYGON); // for wireframing, pass GL_LINES
+		glBegin(GL_POLYGON);
 		glVertex3f(bez.patch[0][0][0], bez.patch[0][0][1], bez.patch[0][0][2]);
 		glVertex3f(bez.patch[0][3][0], bez.patch[0][3][1], bez.patch[0][3][2]);
 		glVertex3f(bez.patch[3][3][0], bez.patch[3][3][1], bez.patch[3][3][2]);
@@ -222,8 +222,9 @@ void myDisplay() {
 		glPolygonMode(GL_FRONT, GL_FILL); // fill mode
 		glPolygonMode(GL_BACK, GL_FILL);
 	}
-	for (int j = 0; j < s.patch_list.size(); j++) {
-		BezierPatch bez = s.patch_list[j];
+
+	for (int j = 0; j < scene.patch_list.size(); j++) {
+		BezierPatch bez = scene.patch_list[j];
 		//cout<<"Tri List: "<<bez.tri_list.size()<<endl;
 		//cout<<"Geo List: "<<bez.geo_list.size()<<endl;
 		for (int i = 0; i < bez.tri_list.size(); i++) {
@@ -247,6 +248,7 @@ void myDisplay() {
 				glPolygonMode(GL_FRONT, GL_FILL); // fill mode
 				glPolygonMode(GL_BACK, GL_FILL);
 			}else{
+
 				glBegin(GL_POLYGON);
 				glVertex3f(a[0],a[1],a[2]);
 				glVertex3f(b[0],b[1],b[2]);
@@ -255,27 +257,11 @@ void myDisplay() {
 			}
 		}
 	}
-
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
 
 int main(int argc, char* argv[]){
-	/* Test Area
-	BezierPatch test;
-
-	vector<glm::vec3> one;
-	one.push_back(glm::vec3(0.0,0.0,0.1));
-	one.push_back(glm::vec3(0.2,0.0,0.1));
-	one.push_back(glm::vec3(0.0,0.3,0.1));
-	test.push_back(one);
-	test.push_back(one);
-
-	cout<<test.patch[1][0][2]<<endl;
-	cout<<"Complete!"<<endl;
-
-	End Test Area */
-
 	/*
 	parse command line arguments
 	*/
@@ -288,7 +274,7 @@ int main(int argc, char* argv[]){
 
 	string filename = argv[1];
 	float subdivision_param = atof(argv[2]); //takes on different meaning depending on whether using uniform or adapative (size vs error)
-	s.step = subdivision_param;
+	scene.step = subdivision_param;
 
 	if (argc > 3){
 		//not checking third paramter. Assuming good input. Should handle case of bad input later
@@ -339,7 +325,7 @@ int main(int argc, char* argv[]){
 				working_patch.push_back(row);
 
 				if (working_patch.size() == 4) {
-					s.add_patch(working_patch);
+					scene.add_patch(working_patch);
 					new (&working_patch) BezierPatch();
 				}
 			}
@@ -354,8 +340,9 @@ int main(int argc, char* argv[]){
 	if (use_adaptive){
 
 	}else{
-		s.subdivide_patch();
-		s.make_tri_list();
+		scene.subdivide_patch();
+		scene.make_tri_list();
+		scene.set_min_max();
 	}
 
 	glutInit(&argc, argv);
