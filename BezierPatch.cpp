@@ -213,9 +213,6 @@ void BezierPatch::adaptive_subdivide(float tol){
 			bc_split = true;
 		}
 
-		//there are 8 cases to check for how to split.
-
-		//ef_split bool is true if we need to split edge from e to f.
 		if (!ab_split){
 			if(!ac_split){
 				if(!bc_split){

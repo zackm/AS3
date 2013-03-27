@@ -24,11 +24,11 @@ using namespace std;
 class BezierPatch{
 public:
     vector<vector<glm::vec3> > patch;
-    vector<LocalGeo> geo_list;
-    vector<Triangle> tri_list;
+    vector<LocalGeo> geo_list; //list of full geometry
+    vector<Triangle> tri_list; //represents the final list of fully subdivided triangles
 
-	queue<Triangle> tri_queue;
-	queue<LocalGeo> geo_queue;
+	queue<Triangle> tri_queue; //hold triangles that need to be checked for subdivision. Currently
+							   //only used for adaptive subdivision.
 
 	BezierPatch(void){};
 	~BezierPatch(void){};
