@@ -92,7 +92,7 @@ void initScene(){
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+//    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
