@@ -50,6 +50,8 @@ unsigned const int ZOOM_IN = 8;
 unsigned const int ZOOM_OUT = 9;
 
 const float CAMERA_STEP = .05;
+const float OBJECT_STEP = .05;
+const float OBJECT_ROT = 5.0f; //taking it to mean five degrees
 
 //glm::vec3 CAMERA_POS, CAMERA_LOOK, CAMERA_UP;
 
@@ -57,7 +59,11 @@ glm::vec3 CAMERA_POS(0,0,2);
 glm::vec3 CAMERA_LOOK(0,0,0);
 glm::vec3 CAMERA_UP(0,1,0);
 
+//Values which will affect the object or camera orientation
 glm::vec3 TRANSLATE(0.0,0.0,0.0);
+glm::vec3 ZOOM(0,0,0);
+float HORIZONTAL_ROT = 0;
+float VERTICAL_ROT = 0;
 
 bool WIREFRAME_ON;
 bool SMOOTH_SHADING_ON;
@@ -159,7 +165,6 @@ void keySpecial(int key, int x, int y){
 		switch(key){
 		case GLUT_KEY_LEFT:
 			//translate left (object, not camera)
-
 			break;
 		case GLUT_KEY_RIGHT:
 			//translate right
@@ -180,19 +185,27 @@ void keySpecial(int key, int x, int y){
 		switch(key){
 		case GLUT_KEY_LEFT:
 			//rotate left (object, not camera)
+			HORIZONTAL_ROT += OBJECT_ROT;
 
+			glutPostRedisplay();
 			break;
 		case GLUT_KEY_RIGHT:
 			//rotate right
+			HORIZONTAL_ROT -= OBJECT_ROT;
 
+			glutPostRedisplay();
 			break;
 		case GLUT_KEY_UP:
 			//rotate up
+			VERTICAL_ROT += OBJECT_ROT;
 
+			glutPostRedisplay();
 			break;
 		case GLUT_KEY_DOWN:
 			//rotate down
+			VERTICAL_ROT -= OBJECT_ROT;
 
+			glutPostRedisplay();
 			break;
 		}
 	}
@@ -236,7 +249,10 @@ void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	glPushMatrix();
 	glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
+	glRotatef(HORIZONTAL_ROT,1,0,0); //horizontal rotate
+	glRotatef(VERTICAL_ROT,0,1,0);//vertical rotate
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
 		//cout<<"Tri List: "<<bez.tri_list.size()<<endl;
@@ -282,6 +298,7 @@ void myDisplay() {
 			}
 		}
 	}
+	glPopMatrix();
 
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
