@@ -49,15 +49,15 @@ unsigned const int SHIFT = 7;
 unsigned const int ZOOM_IN = 8;
 unsigned const int ZOOM_OUT = 9;
 
-const float CAMERA_STEP = .25;
+const float CAMERA_STEP = .05;
 
 //glm::vec3 CAMERA_POS, CAMERA_LOOK, CAMERA_UP;
 
-glm::vec3 CAMERA_POS(0.0,1.0,.2);
-glm::vec3 CAMERA_LOOK(0.0,0.0,0.2);
-glm::vec3 CAMERA_UP(0.0,0.0,1.0);
+glm::vec3 CAMERA_POS(0,0,2);
+glm::vec3 CAMERA_LOOK(0,0,0);
+glm::vec3 CAMERA_UP(0,1,0);
 
-glm::vec3 TRANSLATE_AMOUNT(0.0,0.0,0.0);
+glm::vec3 TRANSLATE(0.0,0.0,0.0);
 
 bool WIREFRAME_ON;
 bool SMOOTH_SHADING_ON;
@@ -75,7 +75,7 @@ void initScene(){
     GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
-    GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
     glShadeModel(GL_SMOOTH);
     
@@ -87,7 +87,7 @@ void initScene(){
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-    
+
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_DEPTH_TEST);
@@ -126,7 +126,7 @@ void keyPressed(unsigned char key, int x, int y) {
 			exit(1);
 		}
 
-		TRANSLATE_AMOUNT = TRANSLATE_AMOUNT + (direction*CAMERA_STEP);
+		TRANSLATE = TRANSLATE + (direction*CAMERA_STEP);
 
 		glutPostRedisplay();
 		break;
@@ -143,7 +143,7 @@ void keyPressed(unsigned char key, int x, int y) {
 			exit(1);
 		}
 
-		TRANSLATE_AMOUNT = TRANSLATE_AMOUNT - (direction*CAMERA_STEP);
+		TRANSLATE = TRANSLATE - (direction*CAMERA_STEP);
 
 		glutPostRedisplay();
 		break;
@@ -201,26 +201,31 @@ void keySpecial(int key, int x, int y){
 void myReshape(int w, int h) {
 	viewport.w = w;
 	viewport.h = h;
+	float aspect_ratio = ((float)w)/((float)h);
 
 	glViewport (0,0,viewport.w,viewport.h);
+	
 	glMatrixMode(GL_PROJECTION);
 
-	glPushMatrix();
-	glTranslatef(TRANSLATE_AMOUNT[0],TRANSLATE_AMOUNT[1],TRANSLATE_AMOUNT[2]);
-
+	glLoadIdentity();
+	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
+	gluPerspective(45.0f,aspect_ratio,CAMERA_POS[2]-1.0f,CAMERA_POS[2]-1000000.0f);
+	//glOrtho(CAMERA_POS[0]-1,CAMERA_POS[0]+1,CAMERA_POS[1]-1,CAMERA_POS[1]+1,CAMERA_POS[2]-1,CAMERA_POS[2]-100000.0f);
 	gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
-		CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]); // look into this later
+			  CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]);
+
+	//glPushMatrix();
+	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
+	 // look into this later
 //    glOrtho(-20,20,-20,20,20,-20); // elephant view
 //    glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
 //    glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
 //	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
-	glPopMatrix();
-
-	glOrtho(CAMERA_POS[0]-5,CAMERA_POS[0]+5,CAMERA_POS[1]-5,CAMERA_POS[1]+5,CAMERA_POS[2]-5,CAMERA_POS[2]+5);
+	//glPopMatrix();
 }
 
 void myDisplay() {
-	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);				// clear the color buffer
     
     if (SMOOTH_SHADING_ON) {
         glShadeModel(GL_SMOOTH);
@@ -229,9 +234,9 @@ void myDisplay() {
     }
     
 	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
-	// Start drawing
-
+	glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
 		//cout<<"Tri List: "<<bez.tri_list.size()<<endl;
@@ -277,6 +282,7 @@ void myDisplay() {
 			}
 		}
 	}
+
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
