@@ -38,7 +38,6 @@ public:
 //****************************************************
 Viewport	viewport;
 Scene scene;
-unsigned char keyarray[];
 unsigned const int SPACE = 0;
 unsigned const int S = 1;
 unsigned const int W = 2;
@@ -72,6 +71,26 @@ void initScene(){
 	/*CAMERA_POS = glm::vec3(0.0,1.0,.2);
 	CAMERA_LOOK = glm::vec3(0.0,0.0,0.2);
 	CAMERA_UP = glm::vec3(0.0,0.0,1.0);*/
+    
+    GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
+    GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+    GLfloat mat_shininess[] = { 50.0 };
+    glShadeModel(GL_SMOOTH);
+    
+    glClearColor (0.0, 0.0, 0.0, 0.0);
+    
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void keyPressed(unsigned char key, int x, int y) {
@@ -191,10 +210,10 @@ void myReshape(int w, int h) {
 
 	gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
 		CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]); // look into this later
-	//    glOrtho(-20,20,-20,20,20,-20); // elephant view
-	//    glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
-	//    glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
-	//	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
+//    glOrtho(-20,20,-20,20,20,-20); // elephant view
+//    glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
+//    glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
+//	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
 	glPopMatrix();
 
 	glOrtho(CAMERA_POS[0]-5,CAMERA_POS[0]+5,CAMERA_POS[1]-5,CAMERA_POS[1]+5,CAMERA_POS[2]-5,CAMERA_POS[2]+5);
@@ -202,13 +221,19 @@ void myReshape(int w, int h) {
 
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT);				// clear the color buffer
-
+    
+    if (SMOOTH_SHADING_ON) {
+        glShadeModel(GL_SMOOTH);
+    } else {
+        glShadeModel(GL_FLAT);
+    }
+    
 	glMatrixMode(GL_MODELVIEW);
 
 	// Start drawing
 	for (int i = 0; i < scene.patch_list.size(); i++) {
 		BezierPatch bez = scene.patch_list[i];
-		glColor3f(1.0f, 0.0f, 0.0f);
+//		glColor3f(1.0f, 0.0f, 0.0f);
 		glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
 		glPolygonMode(GL_BACK, GL_LINE);
 
@@ -229,20 +254,23 @@ void myDisplay() {
 		//cout<<"Geo List: "<<bez.geo_list.size()<<endl;
 		for (int i = 0; i < bez.tri_list.size(); i++) {
 			glm::vec3 tri = bez.tri_list[i];
-			glm::vec3 a,b,c;
-			a = bez.geo_list[tri[0]].point;
-			b = bez.geo_list[tri[1]].point;
-			c = bez.geo_list[tri[2]].point;
-			glColor3f(1.0f, 1.0f, 1.0f);
+			LocalGeo a,b,c;
+			a = bez.geo_list[tri[0]];
+			b = bez.geo_list[tri[1]];
+			c = bez.geo_list[tri[2]];
+//			glColor3f(1.0f, 1.0f, 1.0f);
 
 			if (WIREFRAME_ON){
 				glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
 				glPolygonMode(GL_BACK, GL_LINE);
-
+                
 				glBegin(GL_POLYGON);
-				glVertex3f(a[0],a[1],a[2]);
-				glVertex3f(b[0],b[1],b[2]);
-				glVertex3f(c[0],c[1],c[2]);
+                glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+				glVertex3f(a.point[0],a.point[1],a.point[2]);
+                glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+				glVertex3f(b.point[0],b.point[1],b.point[2]);
+                glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+				glVertex3f(c.point[0],c.point[1],c.point[2]);
 				glEnd();
 
 				glPolygonMode(GL_FRONT, GL_FILL); // fill mode
@@ -250,9 +278,12 @@ void myDisplay() {
 			}else{
 
 				glBegin(GL_POLYGON);
-				glVertex3f(a[0],a[1],a[2]);
-				glVertex3f(b[0],b[1],b[2]);
-				glVertex3f(c[0],c[1],c[2]);
+				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+				glVertex3f(a.point[0],a.point[1],a.point[2]);
+                glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+				glVertex3f(b.point[0],b.point[1],b.point[2]);
+                glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+				glVertex3f(c.point[0],c.point[1],c.point[2]);
 				glEnd();
 			}
 		}
