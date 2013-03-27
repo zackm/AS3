@@ -78,7 +78,7 @@ void initScene(){
 	CAMERA_LOOK = glm::vec3(0.0,0.0,0.2);
 	CAMERA_UP = glm::vec3(0.0,0.0,1.0);*/
     
-    GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+    GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
 	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
@@ -92,7 +92,7 @@ void initScene(){
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -115,6 +115,22 @@ void keyPressed(unsigned char key, int x, int y) {
 		//toggle between filled and wireframe
 		WIREFRAME_ON = !WIREFRAME_ON;
 		break;
+	case '=':
+		//zoom in by amount CAMERA_STEP
+		direction = CAMERA_LOOK-CAMERA_POS;
+
+		norm = glm::dot(direction,direction);
+
+		if (norm>0.0){
+			direction /= glm::sqrt(norm);
+		}else{
+			printf("Camera position and camera look at position are equal");
+			exit(1);
+		}
+
+		ZOOM = ZOOM + (direction*CAMERA_STEP);
+
+		break;
 	case '+':
 		//zoom in by amount CAMERA_STEP
 		direction = CAMERA_LOOK-CAMERA_POS;
@@ -128,7 +144,7 @@ void keyPressed(unsigned char key, int x, int y) {
 			exit(1);
 		}
 
-		TRANSLATE = TRANSLATE + (direction*CAMERA_STEP);
+		ZOOM = ZOOM + (direction*CAMERA_STEP);
 
 		break;
 	case '-':
@@ -144,7 +160,7 @@ void keyPressed(unsigned char key, int x, int y) {
 			exit(1);
 		}
 
-		TRANSLATE = TRANSLATE - (direction*CAMERA_STEP);
+		ZOOM = ZOOM - (direction*CAMERA_STEP);
 
 		break;
 	}
@@ -152,6 +168,8 @@ void keyPressed(unsigned char key, int x, int y) {
 
 void keySpecial(int key, int x, int y){
 	int key_modifier = glutGetModifiers();
+	glm::vec3 right(1,0,0);
+	glm::vec3 up(0,1,0);
 
 	switch (key_modifier){
 	case GLUT_ACTIVE_SHIFT:
@@ -159,18 +177,19 @@ void keySpecial(int key, int x, int y){
 		switch(key){
 		case GLUT_KEY_LEFT:
 			//translate left (object, not camera)
+			TRANSLATE = TRANSLATE - OBJECT_STEP*right;
 			break;
 		case GLUT_KEY_RIGHT:
 			//translate right
-
+			TRANSLATE = TRANSLATE + OBJECT_STEP*right;
 			break;
 		case GLUT_KEY_UP:
 			//translate up
-
+			TRANSLATE = TRANSLATE + OBJECT_STEP*up;
 			break;
 		case GLUT_KEY_DOWN:
 			//translate down
-
+			TRANSLATE = TRANSLATE - OBJECT_STEP*up;
 			break;
 		}
 		break;
@@ -240,9 +259,13 @@ void myDisplay() {
 	glLoadIdentity();
 
 	glPushMatrix();
+	glTranslatef(ZOOM[0],ZOOM[1],ZOOM[2]);
 	glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
 	glRotatef(HORIZONTAL_ROT,1,0,0); //horizontal rotate
 	glRotatef(VERTICAL_ROT,0,1,0);//vertical rotate
+
+	//glutSolidTeapot(1.0f);
+
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
 		//cout<<"Tri List: "<<bez.tri_list.size()<<endl;
@@ -280,10 +303,10 @@ void myDisplay() {
                 
 				glBegin(GL_POLYGON);
 				
-                glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
-				glVertex3f(b.point[0],b.point[1],b.point[2]);
 				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 				glVertex3f(a.point[0],a.point[1],a.point[2]);
+                glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+				glVertex3f(b.point[0],b.point[1],b.point[2]);
                 glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 				glVertex3f(c.point[0],c.point[1],c.point[2]);
 				
