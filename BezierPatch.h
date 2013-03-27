@@ -16,15 +16,18 @@
 #pragma once
 #include "LocalGeo.h"
 
+#pragma once
+#include "Triangle.h"
+
 using namespace std;
 
 class BezierPatch{
 public:
     vector<vector<glm::vec3> > patch;
     vector<LocalGeo> geo_list;
-    vector<glm::vec3> tri_list;
+    vector<Triangle> tri_list;
 
-	queue<glm::vec3> tri_queue;
+	queue<Triangle> tri_queue;
 	queue<LocalGeo> geo_queue;
 
 	BezierPatch(void){};
@@ -39,8 +42,9 @@ public:
 	BezierCurve u_curve(int);
 	BezierCurve v_curve(int);
     void add_geo(LocalGeo);
+
     void uniform_subdivide(float);
-    void make_tri_list(float);
+    void make_tri_list_uniform(float);
 
 	void adaptive_subdivide(float);
 };

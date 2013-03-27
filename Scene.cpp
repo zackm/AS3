@@ -23,12 +23,6 @@ void Scene::subdivide_patch(bool use_adaptive) {
 	}
 }
 
-void Scene::make_tri_list(bool use_adaptive) {
-	for (int i = 0; i < patch_list.size(); i++) {
-		patch_list[i].make_tri_list(step);
-	}
-}
-
 
 //this can set camera based on patches probably, not necessarily the LocalGeo
 void Scene::set_min_max() {

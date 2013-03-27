@@ -283,16 +283,18 @@ void myDisplay() {
 
 	//glutSolidTeapot(1.0f);
 
+	Triangle tri;
+
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
 		//cout<<"Tri List: "<<bez.tri_list.size()<<endl;
 		//cout<<"Geo List: "<<bez.geo_list.size()<<endl;
 		for (int i = 0; i < bez.tri_list.size(); i++) {
-			glm::vec3 tri = bez.tri_list[i];
+			Triangle tri = bez.tri_list[i];
 			LocalGeo a,b,c;
-			a = bez.geo_list[tri[0]];
-			b = bez.geo_list[tri[1]];
-			c = bez.geo_list[tri[2]];
+			a = tri.a;
+			b = tri.b;
+			c = tri.c;
 //			glColor3f(1.0f, 1.0f, 1.0f);
 
 			if (WIREFRAME_ON){
@@ -414,7 +416,6 @@ int main(int argc, char* argv[]){
 	}
 
 	scene.subdivide_patch(use_adaptive); //does uniform tessellation if use_adaptive is false
-	scene.make_tri_list(use_adaptive);
 	scene.set_min_max();
 
 	glutInit(&argc, argv);

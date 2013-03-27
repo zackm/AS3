@@ -26,6 +26,5 @@ public:
     Scene(void){};
     void add_patch(BezierPatch);
     void subdivide_patch(bool);
-    void make_tri_list(bool);
     void set_min_max();
 };
