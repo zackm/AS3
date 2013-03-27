@@ -130,7 +130,6 @@ void keyPressed(unsigned char key, int x, int y) {
 
 		TRANSLATE = TRANSLATE + (direction*CAMERA_STEP);
 
-//		glutPostRedisplay();
 		break;
 	case '-':
 		//zoom out by amount CAMERA_STEP
@@ -147,7 +146,6 @@ void keyPressed(unsigned char key, int x, int y) {
 
 		TRANSLATE = TRANSLATE - (direction*CAMERA_STEP);
 
-//		glutPostRedisplay();
 		break;
 	}
 }
@@ -183,25 +181,21 @@ void keySpecial(int key, int x, int y){
 			//rotate left (object, not camera)
 			HORIZONTAL_ROT += OBJECT_ROT;
 
-			glutPostRedisplay();
 			break;
 		case GLUT_KEY_RIGHT:
 			//rotate right
 			HORIZONTAL_ROT -= OBJECT_ROT;
 
-			glutPostRedisplay();
 			break;
 		case GLUT_KEY_UP:
 			//rotate up
 			VERTICAL_ROT += OBJECT_ROT;
 
-			glutPostRedisplay();
 			break;
 		case GLUT_KEY_DOWN:
 			//rotate down
 			VERTICAL_ROT -= OBJECT_ROT;
 
-			glutPostRedisplay();
 			break;
 		}
 	}
@@ -270,10 +264,11 @@ void myDisplay() {
                 glColor3f(1.0f,1.0f,1.0f);
                 
 				glBegin(GL_POLYGON);
-				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
-				glVertex3f(a.point[0],a.point[1],a.point[2]);
+		
                 glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 				glVertex3f(b.point[0],b.point[1],b.point[2]);
+				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+				glVertex3f(a.point[0],a.point[1],a.point[2]);
                 glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 				glVertex3f(c.point[0],c.point[1],c.point[2]);
 				glEnd();
@@ -284,12 +279,14 @@ void myDisplay() {
                 glEnable(GL_LIGHTING);
                 
 				glBegin(GL_POLYGON);
-				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
-				glVertex3f(a.point[0],a.point[1],a.point[2]);
+				
                 glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 				glVertex3f(b.point[0],b.point[1],b.point[2]);
+				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+				glVertex3f(a.point[0],a.point[1],a.point[2]);
                 glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 				glVertex3f(c.point[0],c.point[1],c.point[2]);
+				
 				glEnd();
 			}
 		}
