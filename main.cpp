@@ -248,6 +248,23 @@ void myReshape(int w, int h) {
 
 void myDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);				// clear the color buffer
+
+	int w = viewport.w;
+	int h = viewport.h;
+	//viewport.w = w;
+	//viewport.h = h;
+	float aspect_ratio = ((float)w)/((float)h);
+
+	glViewport (0,0,viewport.w,viewport.h);
+	
+	glMatrixMode(GL_PROJECTION);
+
+	glLoadIdentity();
+	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
+	gluPerspective(45.0f,aspect_ratio,CAMERA_POS[2]-1.0f,CAMERA_POS[2]-1000000.0f);
+	//glOrtho(CAMERA_POS[0]-1,CAMERA_POS[0]+1,CAMERA_POS[1]-1,CAMERA_POS[1]+1,CAMERA_POS[2]-1,CAMERA_POS[2]-100000.0f);
+	gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
+			  CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]);
     
     if (SMOOTH_SHADING_ON) {
         glShadeModel(GL_SMOOTH);
@@ -409,8 +426,8 @@ int main(int argc, char* argv[]){
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
 	// Initalize theviewport size
-	viewport.w = 800;
-	viewport.h = 800;
+	viewport.w = 400;
+	viewport.h = 400;
 
 	//The size and position of the window
 	glutInitWindowSize(viewport.w, viewport.h);
@@ -420,7 +437,7 @@ int main(int argc, char* argv[]){
 	initScene();							// quick function to set up scene
 
 	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
-	glutReshapeFunc(myReshape);				// function to run when the window gets resized
+	//glutReshapeFunc(myReshape);				// function to run when the window gets resized
     glutIdleFunc(myDisplay);                // function to run when idle
     
 	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
