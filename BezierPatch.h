@@ -5,6 +5,9 @@
 #include <vector>
 
 #pragma once
+#include <queue>
+
+#pragma once
 #include "LocalTangent.h"
 
 #pragma once
@@ -21,8 +24,11 @@ public:
     vector<LocalGeo> geo_list;
     vector<glm::vec3> tri_list;
 
-	BezierPatch(void);
-	~BezierPatch(void);
+	queue<glm::vec3> tri_queue;
+	queue<LocalGeo> geo_queue;
+
+	BezierPatch(void){};
+	~BezierPatch(void){};
     
     void push_back(vector<glm::vec3>);
 
@@ -33,7 +39,9 @@ public:
 	BezierCurve u_curve(int);
 	BezierCurve v_curve(int);
     void add_geo(LocalGeo);
-    void subdivide_patch(float);
+    void uniform_subdivide(float);
     void make_tri_list(float);
+
+	void adaptive_subdivide(float);
 };
 
