@@ -231,22 +231,6 @@ void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);
 
 	// Start drawing
-	for (int i = 0; i < scene.patch_list.size(); i++) {
-		BezierPatch bez = scene.patch_list[i];
-//		glColor3f(1.0f, 0.0f, 0.0f);
-		glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
-		glPolygonMode(GL_BACK, GL_LINE);
-
-		glBegin(GL_POLYGON);
-		glVertex3f(bez.patch[0][0][0], bez.patch[0][0][1], bez.patch[0][0][2]);
-		glVertex3f(bez.patch[0][3][0], bez.patch[0][3][1], bez.patch[0][3][2]);
-		glVertex3f(bez.patch[3][3][0], bez.patch[3][3][1], bez.patch[3][3][2]);
-		glVertex3f(bez.patch[3][0][0], bez.patch[3][0][1], bez.patch[3][0][2]);
-		glEnd();
-
-		glPolygonMode(GL_FRONT, GL_FILL); // fill mode
-		glPolygonMode(GL_BACK, GL_FILL);
-	}
 
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
@@ -264,8 +248,12 @@ void myDisplay() {
 				glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
 				glPolygonMode(GL_BACK, GL_LINE);
                 
+                glDisable(GL_LIGHTING);
+                glClearColor (0.0, 0.0, 0.0, 0.0);
+                glColor3f(1.0f,1.0f,1.0f);
+                
 				glBegin(GL_POLYGON);
-                glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 				glVertex3f(a.point[0],a.point[1],a.point[2]);
                 glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 				glVertex3f(b.point[0],b.point[1],b.point[2]);
@@ -276,7 +264,8 @@ void myDisplay() {
 				glPolygonMode(GL_FRONT, GL_FILL); // fill mode
 				glPolygonMode(GL_BACK, GL_FILL);
 			}else{
-
+                glEnable(GL_LIGHTING);
+                
 				glBegin(GL_POLYGON);
 				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 				glVertex3f(a.point[0],a.point[1],a.point[2]);
