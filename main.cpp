@@ -110,14 +110,10 @@ void keyPressed(unsigned char key, int x, int y) {
 	case 's':
 		//toggle between flat and smooth
 		SMOOTH_SHADING_ON = !SMOOTH_SHADING_ON;
-
-		glutPostRedisplay();
 		break;
 	case 'w':
 		//toggle between filled and wireframe
 		WIREFRAME_ON = !WIREFRAME_ON;
-
-		glutPostRedisplay();
 		break;
 	case '+':
 		//zoom in by amount CAMERA_STEP
@@ -134,7 +130,7 @@ void keyPressed(unsigned char key, int x, int y) {
 
 		TRANSLATE = TRANSLATE + (direction*CAMERA_STEP);
 
-		glutPostRedisplay();
+//		glutPostRedisplay();
 		break;
 	case '-':
 		//zoom out by amount CAMERA_STEP
@@ -151,7 +147,7 @@ void keyPressed(unsigned char key, int x, int y) {
 
 		TRANSLATE = TRANSLATE - (direction*CAMERA_STEP);
 
-		glutPostRedisplay();
+//		glutPostRedisplay();
 		break;
 	}
 }
@@ -399,13 +395,14 @@ int main(int argc, char* argv[]){
 	//The size and position of the window
 	glutInitWindowSize(viewport.w, viewport.h);
 	glutInitWindowPosition(0,0);
-	glutCreateWindow(argv[0]);
+	glutCreateWindow("Tyler and Zack AS3");
 
 	initScene();							// quick function to set up scene
 
 	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
 	glutReshapeFunc(myReshape);				// function to run when the window gets resized
-
+    glutIdleFunc(myDisplay);                // function to run when idle
+    
 	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
 	glutSpecialFunc(keySpecial);
 
