@@ -413,13 +413,9 @@ int main(int argc, char* argv[]){
 		}
 	}
 
-	if (use_adaptive){
-
-	}else{
-		scene.subdivide_patch();
-		scene.make_tri_list();
-		scene.set_min_max();
-	}
+	scene.subdivide_patch(use_adaptive); //does uniform tessellation if use_adaptive is false
+	scene.make_tri_list(use_adaptive);
+	scene.set_min_max();
 
 	glutInit(&argc, argv);
 
