@@ -38,30 +38,24 @@ public:
 //****************************************************
 Viewport	viewport;
 Scene scene;
-unsigned const int SPACE = 0;
-unsigned const int S = 1;
-unsigned const int W = 2;
-unsigned const int LEFT = 3;
-unsigned const int RIGHT = 4;
-unsigned const int UP = 5;
-unsigned const int DOWN = 6;
-unsigned const int SHIFT = 7;
-unsigned const int ZOOM_IN = 8;
-unsigned const int ZOOM_OUT = 9;
 
-const float CAMERA_STEP = .05;
-const float OBJECT_STEP = .05;
+const float CAMERA_STEP = .15;
+const float OBJECT_STEP = .15;
 const float OBJECT_ROT = 5.0f; //taking it to mean five degrees
 
-//glm::vec3 CAMERA_POS, CAMERA_LOOK, CAMERA_UP;
-
-glm::vec3 CAMERA_POS(0,0,2);
-glm::vec3 CAMERA_LOOK(0,0,0);
-glm::vec3 CAMERA_UP(0,1,0);
 
 //Values which will affect the object or camera orientation
-glm::vec3 TRANSLATE(0.0,0.0,0.0);
-glm::vec3 ZOOM(0,0,0);
+glm::vec3 TRANSLATE(0.0,0.0,0.0); //moving object
+glm::vec3 ZOOM(0,0,0); //moving camera
+
+
+
+float ZOOM_FACTOR = 1.0f;
+float ZOOM_STEP = .05;
+float FOV = 30.0f;
+float MAX_FOV = 170.0f;
+float MIN_FOV = 10.0f;
+
 float HORIZONTAL_ROT = 0;
 float VERTICAL_ROT = 0;
 
@@ -117,51 +111,24 @@ void keyPressed(unsigned char key, int x, int y) {
 		WIREFRAME_ON = !WIREFRAME_ON;
 		break;
 	case '=':
-		//zoom in by amount CAMERA_STEP
-		direction = CAMERA_LOOK-CAMERA_POS;
-
-		norm = glm::dot(direction,direction);
-
-		if (norm>0.0){
-			direction /= glm::sqrt(norm);
-		}else{
-			printf("Camera position and camera look at position are equal");
-			exit(1);
+		//CAMERA_POS = CAMERA_POS+(direction*CAMERA_STEP);
+		if (ZOOM_FACTOR*FOV>MIN_FOV){
+			ZOOM_FACTOR -= ZOOM_STEP;
 		}
-
-		ZOOM = ZOOM + (direction*CAMERA_STEP);
 
 		break;
 	case '+':
-		//zoom in by amount CAMERA_STEP
-		direction = CAMERA_LOOK-CAMERA_POS;
-
-		norm = glm::dot(direction,direction);
-
-		if (norm>0.0){
-			direction /= glm::sqrt(norm);
-		}else{
-			printf("Camera position and camera look at position are equal");
-			exit(1);
+		//CAMERA_POS = CAMERA_POS+(direction*CAMERA_STEP);
+		if (ZOOM_FACTOR*FOV>MIN_FOV){
+			ZOOM_FACTOR -= ZOOM_STEP;
 		}
-
-		ZOOM = ZOOM + (direction*CAMERA_STEP);
 
 		break;
 	case '-':
-		//zoom out by amount CAMERA_STEP
-		direction = CAMERA_LOOK-CAMERA_POS;
-
-		norm = glm::dot(direction,direction);
-
-		if (norm>0.0){
-			direction /= glm::sqrt(norm);
-		}else{
-			printf("Camera position and camera look at position are equal");
-			exit(1);
+		//CAMERA_POS = CAMERA_POS-(direction*CAMERA_STEP);
+		if(ZOOM_FACTOR*FOV<MAX_FOV){
+			ZOOM_FACTOR += ZOOM_STEP;
 		}
-
-		ZOOM = ZOOM - (direction*CAMERA_STEP);
 
 		break;
 	}
@@ -232,10 +199,10 @@ void myReshape(int w, int h) {
 
 	glLoadIdentity();
 	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
-	gluPerspective(45.0f,aspect_ratio,CAMERA_POS[2]-1.0f,CAMERA_POS[2]-1000000.0f);
-	//glOrtho(CAMERA_POS[0]-1,CAMERA_POS[0]+1,CAMERA_POS[1]-1,CAMERA_POS[1]+1,CAMERA_POS[2]-1,CAMERA_POS[2]-100000.0f);
-	gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
-			  CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]);
+	//gluPerspective(45.0f,aspect_ratio,CAMERA_POS[2]-1.0f,CAMERA_POS[2]-1000000.0f);
+	////glOrtho(CAMERA_POS[0]-1,CAMERA_POS[0]+1,CAMERA_POS[1]-1,CAMERA_POS[1]+1,CAMERA_POS[2]-1,CAMERA_POS[2]-100000.0f);
+	//gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
+	//		  CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]);
 
 	//glPushMatrix();
 	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
@@ -259,44 +226,45 @@ void myDisplay() {
 	glViewport (0,0,viewport.w,viewport.h);
 	
 	glMatrixMode(GL_PROJECTION);
-
 	glLoadIdentity();
-	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
-	gluPerspective(45.0f,aspect_ratio,CAMERA_POS[2]-1.0f,CAMERA_POS[2]-1000000.0f);
-	//glOrtho(CAMERA_POS[0]-1,CAMERA_POS[0]+1,CAMERA_POS[1]-1,CAMERA_POS[1]+1,CAMERA_POS[2]-1,CAMERA_POS[2]-100000.0f);
-	gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
-			  CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]);
+	//Orthographic Projection
+	glOrtho(scene.left*ZOOM_FACTOR,scene.right*ZOOM_FACTOR,scene.bottom*ZOOM_FACTOR,scene.top*ZOOM_FACTOR,
+		    scene.z_near,scene.z_far);
+
+	//cout<<scene.left<<','<<scene.right<<endl;
+	//cout<<scene.bottom<<','<<scene.top<<endl;
+	//cout<<scene.z_near<<','<<scene.z_far<<'\n'<<endl;
+
+	////Perspective Projection
+	//gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
     
     if (SMOOTH_SHADING_ON) {
         glShadeModel(GL_SMOOTH);
     } else {
         glShadeModel(GL_FLAT);
     }
+
     
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	gluLookAt(scene.camera_pos.x,scene.camera_pos.y,scene.camera_pos.z,
+			  scene.camera_look.x,scene.camera_look.y,scene.camera_look.z,
+			  scene.camera_up.x,scene.camera_up.y,scene.camera_up.z);
 
+	//glLoadIdentity();
 	glPushMatrix();
-	glTranslatef(ZOOM[0],ZOOM[1],ZOOM[2]);
 	glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
 	glRotatef(HORIZONTAL_ROT,1,0,0); //horizontal rotate
 	glRotatef(VERTICAL_ROT,0,1,0);//vertical rotate
-
-	//glutSolidTeapot(1.0f);
-
 	Triangle tri;
-
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
-		//cout<<"Tri List: "<<bez.tri_list.size()<<endl;
-		//cout<<"Geo List: "<<bez.geo_list.size()<<endl;
 		for (int i = 0; i < bez.tri_list.size(); i++) {
 			Triangle tri = bez.tri_list[i];
 			LocalGeo a,b,c;
 			a = tri.a;
 			b = tri.b;
 			c = tri.c;
-//			glColor3f(1.0f, 1.0f, 1.0f);
 
 			if (WIREFRAME_ON){
 				glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
@@ -347,7 +315,7 @@ int main(int argc, char* argv[]){
 	bool use_adaptive = false;
 
 	if (argc<2){
-		cout<<"Not enough paramters"<<endl;
+		cout<<"Not enough parameters"<<endl;
 		exit(1);
 	}
 
@@ -418,6 +386,7 @@ int main(int argc, char* argv[]){
 
 	scene.subdivide_patch(use_adaptive); //does uniform tessellation if use_adaptive is false
 	scene.set_min_max();
+	scene.set_camera_pos();
 
 	glutInit(&argc, argv);
 

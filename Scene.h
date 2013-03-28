@@ -20,6 +20,15 @@ class Scene {
 public:
     vector<BezierPatch> patch_list;
     glm::vec3 min, max;
+
+	glm::vec3 camera_pos;
+	glm::vec3 camera_look;
+	glm::vec3 camera_up;
+
+	//stuff for an orthographic scene.
+	float left,right,bottom,top,z_near,z_far;
+	float diameter; //for bounding sphere
+	glm::vec3 center;
     
     float step;
     
@@ -27,4 +36,5 @@ public:
     void add_patch(BezierPatch);
     void subdivide_patch(bool);
     void set_min_max();
+	void set_camera_pos();
 };
