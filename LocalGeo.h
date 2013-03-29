@@ -7,7 +7,14 @@ public:
 	glm::vec3 normal;
 	glm::vec2 param_value;
 
-	LocalGeo(void){};
+	glm::vec3 partial_u,partial_v,partial_uu,partial_vv,partial_uv; //symmetric with vu so only need one.
+	glm::mat2 first_form;
+	glm::mat2 second_form;
+	float gaussian_curvature,mean_curvature;
+
+	LocalGeo(void){gaussian_curvature = mean_curvature = 0;};
 	LocalGeo(glm::vec3,glm::vec3,glm::vec2);
 	~LocalGeo(void){};
+
+	void set_curvatures();
 };

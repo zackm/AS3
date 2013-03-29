@@ -19,6 +19,10 @@ BezierCurve::BezierCurve(vector<glm::vec3> vec_arg) {
     points = vec_arg;
 }
 
+int BezierCurve::number_points(){
+	return points.size();
+}
+
 glm::vec3 BezierCurve::operator[](int pos) const {
     return points[pos];
 }

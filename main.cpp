@@ -55,19 +55,21 @@ float MIN_FOV = 10.0f;
 float HORIZONTAL_ROT = 0;
 float VERTICAL_ROT = 0;
 
-bool WIREFRAME_ON, SMOOTH_SHADING_ON, PROJ_ORTHO;
+bool WIREFRAME_ON, SMOOTH_SHADING_ON, PROJ_ORTHO,MEAN_CURVATURE_ON,GAUSS_CURVATURE_ON;
 
 void initScene(){
 	// Nothing to do here for this simple example.
 	SMOOTH_SHADING_ON = true;
 	WIREFRAME_ON = false;
 	PROJ_ORTHO = true; //false means use perspective instead of ortho.
+	GAUSS_CURVATURE_ON = false;
+	MEAN_CURVATURE_ON = false;
 
 	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
 	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
-	GLfloat mat_shininess[] = { 50.0 };
+	GLfloat mat_shininess[] = { 20.0 };
 	glShadeModel(GL_SMOOTH);
 
 	glClearColor (0.0, 0.0, 0.0, 0.0);
@@ -102,6 +104,21 @@ void keyPressed(unsigned char key, int x, int y) {
 	case 'p':
 		//toggle between ortho and perspective projection
 		PROJ_ORTHO = !PROJ_ORTHO;
+		break;
+	case 'g':
+		//toggle between gauss and mean curvature. Only one can be on at a time.
+		if (MEAN_CURVATURE_ON){
+			MEAN_CURVATURE_ON = false;
+		}
+		GAUSS_CURVATURE_ON = !GAUSS_CURVATURE_ON;
+		break;
+	case 'm':
+		//hold down h to see mean curvature (not a toggle switch)
+		if (GAUSS_CURVATURE_ON){
+			GAUSS_CURVATURE_ON = false;
+		}
+		MEAN_CURVATURE_ON = !MEAN_CURVATURE_ON;
+		break;
 	case '=':
 		if (ZOOM_FACTOR*FOV>MIN_FOV){
 			ZOOM_FACTOR -= ZOOM_STEP;
@@ -156,22 +173,18 @@ void keySpecial(int key, int x, int y){
 		case GLUT_KEY_LEFT:
 			//rotate left (object, not camera)
 			HORIZONTAL_ROT += OBJECT_ROT;
-
 			break;
 		case GLUT_KEY_RIGHT:
 			//rotate right
 			HORIZONTAL_ROT -= OBJECT_ROT;
-
 			break;
 		case GLUT_KEY_UP:
 			//rotate up
 			VERTICAL_ROT += OBJECT_ROT;
-
 			break;
 		case GLUT_KEY_DOWN:
 			//rotate down
 			VERTICAL_ROT -= OBJECT_ROT;
-
 			break;
 		}
 	}
@@ -218,6 +231,7 @@ void myDisplay() {
 		gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
 	}
 
+	//determine how to color the model
 	if (SMOOTH_SHADING_ON) {
 		glShadeModel(GL_SMOOTH);
 	} else {
@@ -236,6 +250,7 @@ void myDisplay() {
 	glRotatef(HORIZONTAL_ROT,1,0,0); //horizontal rotate
 	glRotatef(VERTICAL_ROT,0,1,0);//vertical rotate
 	Triangle tri;
+	float a_color,b_color,c_color;
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
 		for (int i = 0; i < bez.tri_list.size(); i++) {
@@ -266,18 +281,72 @@ void myDisplay() {
 				glPolygonMode(GL_FRONT, GL_FILL); // fill mode
 				glPolygonMode(GL_BACK, GL_FILL);
 			}else{
-				glEnable(GL_LIGHTING);
+				if (GAUSS_CURVATURE_ON){
+					glDisable(GL_LIGHTING);
 
-				glBegin(GL_POLYGON);
+					glBegin(GL_POLYGON);
 
-				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
-				glVertex3f(a.point[0],a.point[1],a.point[2]);
-				glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
-				glVertex3f(b.point[0],b.point[1],b.point[2]);
-				glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
-				glVertex3f(c.point[0],c.point[1],c.point[2]);
+					a_color = glm::max(glm::min(a.gaussian_curvature,1.0f),0.0f);
+					b_color = glm::max(glm::min(b.gaussian_curvature,1.0f),0.0f);
+					c_color = glm::max(glm::min(c.gaussian_curvature,1.0f),0.0f);
 
-				glEnd();
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glColor3f(a_color,a_color,a_color);
+					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+					glVertex3f(a.point[0],a.point[1],a.point[2]);
+
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glColor3f(b_color,b_color,b_color);
+					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+					glVertex3f(b.point[0],b.point[1],b.point[2]);
+
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glColor3f(c_color,c_color,c_color);
+					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+					glVertex3f(c.point[0],c.point[1],c.point[2]);
+
+					glEnd();
+				}else if(MEAN_CURVATURE_ON){
+					glDisable(GL_LIGHTING);
+
+					glBegin(GL_POLYGON);
+
+					a_color = glm::max(glm::min(a.mean_curvature,1.0f),0.0f);
+					b_color = glm::max(glm::min(b.mean_curvature,1.0f),0.0f);
+					c_color = glm::max(glm::min(c.mean_curvature,1.0f),0.0f);
+
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glColor3f(a_color,a_color,a_color);
+					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+					glVertex3f(a.point[0],a.point[1],a.point[2]);
+
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glColor3f(b_color,b_color,b_color);
+					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+					glVertex3f(b.point[0],b.point[1],b.point[2]);
+
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glColor3f(c_color,c_color,c_color);
+					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+					glVertex3f(c.point[0],c.point[1],c.point[2]);
+
+					glEnd();
+				}else{
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glEnable(GL_LIGHTING);
+
+					glBegin(GL_POLYGON);
+
+					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+					glVertex3f(a.point[0],a.point[1],a.point[2]);
+					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+					glVertex3f(b.point[0],b.point[1],b.point[2]);
+					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+					glVertex3f(c.point[0],c.point[1],c.point[2]);
+
+					glEnd();
+
+				}
 			}
 		}
 	}
@@ -371,7 +440,7 @@ int main(int argc, char* argv[]){
 		}
 	}
 
-	cout<<"Finished parsing input file. Initializing subdivision of patches.\n"<<endl;
+	cout<<"\nFinished parsing input file. Initializing subdivision of patches.\n"<<endl;
 	scene.subdivide_patch(use_adaptive); //does uniform tessellation if use_adaptive is false
 
 	cout<<"Finished subdividing patches. Setting scene and camera.\n"<<endl;
@@ -385,8 +454,8 @@ int main(int argc, char* argv[]){
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
 
 	// Initalize theviewport size
-	viewport.w = 400;
-	viewport.h = 400;
+	viewport.w = 600;
+	viewport.h = 600;
 
 	//The size and position of the window
 	glutInitWindowSize(viewport.w, viewport.h);
