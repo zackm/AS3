@@ -1,6 +1,8 @@
 #include "LocalGeo.h"
 #include "glm/glm.hpp"
 
+//float PI = 3.1415926;
+
 LocalGeo::LocalGeo(glm::vec3 pt,glm::vec3 nm, glm::vec2 uv){
 	point = pt;
 
@@ -43,4 +45,12 @@ void LocalGeo::set_curvatures(){
 
 	gaussian_curvature = glm::determinant(upper_second_form);
 	mean_curvature = (upper_second_form[0][0]+upper_second_form[1][1])/(2.0f);
+
+	////Signed curvature mapped to [0,1]
+	//gaussian_curvature = (glm::atan(gaussian_curvature)+(PI/2))/(PI);
+	//mean_curvature = (glm::atan(mean_curvature)+(PI/2))/(PI);
+
+	////Unsigned curvature mapped to [0,1]
+	//gaussian_curvature = glm::atan(gaussian_curvature)/PI;
+	//mean_curvature = glm::atan(mean_curvature)/PI;
 }

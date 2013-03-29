@@ -39,6 +39,8 @@ public:
 Viewport	viewport;
 Scene scene;
 
+float PI = 3.1415926;
+
 const float CAMERA_STEP = .15;
 const float OBJECT_STEP = .15;
 const float OBJECT_ROT = 5.0f; //taking it to mean five degrees
@@ -250,7 +252,7 @@ void myDisplay() {
 	glRotatef(HORIZONTAL_ROT,1,0,0); //horizontal rotate
 	glRotatef(VERTICAL_ROT,0,1,0);//vertical rotate
 	Triangle tri;
-	float a_color,b_color,c_color;
+	float a_color,b_color,c_color, blue, red;
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
 		for (int i = 0; i < bez.tri_list.size(); i++) {
@@ -286,22 +288,48 @@ void myDisplay() {
 
 					glBegin(GL_POLYGON);
 
-					a_color = glm::max(glm::min(a.gaussian_curvature,1.0f),0.0f);
-					b_color = glm::max(glm::min(b.gaussian_curvature,1.0f),0.0f);
-					c_color = glm::max(glm::min(c.gaussian_curvature,1.0f),0.0f);
-
+					if (a.gaussian_curvature>0.0f){
+						red = 0.0f;
+						blue = 2.0f*glm::atan(a.gaussian_curvature)/PI;
+					}else if(a.gaussian_curvature<0.0f){
+						red = -2.0f*glm::atan(a.gaussian_curvature)/PI;
+						blue = 0.0f;
+					}else{
+						red = 0.0f;
+						blue = 0.0f;
+					}
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(a_color,a_color,a_color);
+					glColor3f(red,0.0f,blue);
 					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 					glVertex3f(a.point[0],a.point[1],a.point[2]);
 
+					if (b.gaussian_curvature>0.0f){
+						red = 0.0f;
+						blue = 2.0f*glm::atan(b.gaussian_curvature)/PI;
+					}else if(b.gaussian_curvature<0.0f){
+						red = -2.0f*glm::atan(b.gaussian_curvature)/PI;
+						blue = 0.0f;
+					}else{
+						red = 0.0f;
+						blue = 0.0f;
+					}
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(b_color,b_color,b_color);
+					glColor3f(red,0.0,blue);
 					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 					glVertex3f(b.point[0],b.point[1],b.point[2]);
 
+					if (c.gaussian_curvature>0.0f){
+						red = 0.0f;
+						blue = 2.0f*glm::atan(c.gaussian_curvature)/PI;
+					}else if(c.gaussian_curvature<0.0f){
+						red = -2.0f*glm::atan(c.gaussian_curvature)/PI;
+						blue = 0.0f;
+					}else{
+						red = 0.0f;
+						blue = 0.0f;
+					}
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(c_color,c_color,c_color);
+					glColor3f(red,0.0,blue);
 					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 					glVertex3f(c.point[0],c.point[1],c.point[2]);
 
@@ -311,22 +339,51 @@ void myDisplay() {
 
 					glBegin(GL_POLYGON);
 
-					a_color = glm::max(glm::min(a.mean_curvature,1.0f),0.0f);
-					b_color = glm::max(glm::min(b.mean_curvature,1.0f),0.0f);
-					c_color = glm::max(glm::min(c.mean_curvature,1.0f),0.0f);
-
+					//Blue indicates very positive curvature
+					//Red indicates very negative curvature
+					//Black represents curvature of 0
+					if (a.mean_curvature>0.0f){
+						red = 0.0f;
+						blue = 2.0f*glm::atan(a.mean_curvature)/PI;
+					}else if(a.mean_curvature<0.0f){
+						red = -2.0f*glm::atan(a.mean_curvature)/PI;
+						blue = 0.0f;
+					}else{
+						red = 0.0f;
+						blue = 0.0f;
+					}
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(a_color,a_color,a_color);
+					glColor3f(red,0.0f,blue);
 					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 					glVertex3f(a.point[0],a.point[1],a.point[2]);
 
+					if (b.mean_curvature>0.0f){
+						red = 0.0f;
+						blue = 2.0f*glm::atan(b.mean_curvature)/PI;
+					}else if(b.mean_curvature<0.0f){
+						red = -2.0f*glm::atan(b.mean_curvature)/PI;
+						blue = 0.0f;
+					}else{
+						red = 0.0f;
+						blue = 0.0f;
+					}
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(b_color,b_color,b_color);
+					glColor3f(red,0.0,blue);
 					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 					glVertex3f(b.point[0],b.point[1],b.point[2]);
 
+					if (c.mean_curvature>0.0f){
+						red = 0.0f;
+						blue = 2.0f*glm::atan(c.mean_curvature)/PI;
+					}else if(c.mean_curvature<0.0f){
+						red = -2.0f*glm::atan(c.mean_curvature)/PI;
+						blue = 0.0f;
+					}else{
+						red = 0.0f;
+						blue = 0.0f;
+					}
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(c_color,c_color,c_color);
+					glColor3f(red,0.0,blue);
 					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 					glVertex3f(c.point[0],c.point[1],c.point[2]);
 
