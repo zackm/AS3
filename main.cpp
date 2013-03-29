@@ -291,17 +291,17 @@ void myDisplay() {
 					c_color = glm::max(glm::min(c.gaussian_curvature,1.0f),0.0f);
 
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(a.point[0],a.point[1],a_color);
+					glColor3f(a_color,a_color,a_color);
 					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 					glVertex3f(a.point[0],a.point[1],a.point[2]);
 
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(b.point[0],b.point[1],b_color);
+					glColor3f(b_color,b_color,b_color);
 					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 					glVertex3f(b.point[0],b.point[1],b.point[2]);
 
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(c.point[0],c.point[1],c_color);
+					glColor3f(c_color,c_color,c_color);
 					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 					glVertex3f(c.point[0],c.point[1],c.point[2]);
 
@@ -316,17 +316,17 @@ void myDisplay() {
 					c_color = glm::max(glm::min(c.mean_curvature,1.0f),0.0f);
 
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(a.point[0],a.point[1],a_color);
+					glColor3f(a_color,a_color,a_color);
 					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 					glVertex3f(a.point[0],a.point[1],a.point[2]);
 
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(b.point[0],b.point[1],b_color);
+					glColor3f(b_color,b_color,b_color);
 					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 					glVertex3f(b.point[0],b.point[1],b.point[2]);
 
 					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(c.point[0],c.point[1],c_color);
+					glColor3f(c_color,c_color,c_color);
 					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 					glVertex3f(c.point[0],c.point[1],c.point[2]);
 
