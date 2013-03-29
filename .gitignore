@@ -16,9 +16,6 @@ glut32.dll
 # Compiled Static libraries
 *.a
 
-# Test Files
-*.bez
-
 # log files
 *.txt
 
