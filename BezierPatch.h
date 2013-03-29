@@ -38,6 +38,7 @@ public:
     int size();
     
 	LocalTangent curve_interp(BezierCurve,float);
+	glm::vec3 deCasteljau(BezierCurve,float);
 	LocalGeo patch_interp(float,float);
 	BezierCurve u_curve(int);
 	BezierCurve v_curve(int);

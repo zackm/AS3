@@ -29,4 +29,6 @@ public:
     
     BezierCurve(void);
     BezierCurve(vector<glm::vec3>);
+	
+	int number_points();
 };
