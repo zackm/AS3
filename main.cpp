@@ -33,9 +33,9 @@ public:
 	int w, h; // width and height
 };
 
-//****************************************************
-// Global Variables
-//****************************************************
+/******************
+*Global Variables *
+******************/
 Viewport	viewport;
 Scene scene;
 
@@ -43,12 +43,8 @@ const float CAMERA_STEP = .15;
 const float OBJECT_STEP = .15;
 const float OBJECT_ROT = 5.0f; //taking it to mean five degrees
 
-
 //Values which will affect the object or camera orientation
 glm::vec3 TRANSLATE(0.0,0.0,0.0); //moving object
-glm::vec3 ZOOM(0,0,0); //moving camera
-
-
 
 float ZOOM_FACTOR = 1.0f;
 float ZOOM_STEP = .05;
@@ -59,39 +55,32 @@ float MIN_FOV = 10.0f;
 float HORIZONTAL_ROT = 0;
 float VERTICAL_ROT = 0;
 
-bool WIREFRAME_ON;
-bool SMOOTH_SHADING_ON;
+bool WIREFRAME_ON, SMOOTH_SHADING_ON, PROJ_ORTHO;
 
 void initScene(){
 	// Nothing to do here for this simple example.
 	SMOOTH_SHADING_ON = true;
 	WIREFRAME_ON = false;
+	PROJ_ORTHO = true; //false means use perspective instead of ortho.
 
-	//need to generalize these values later. (max(x,y,z) and min(x,y,z));
-	/*CAMERA_POS = glm::vec3(0.0,1.0,.2);
-	CAMERA_LOOK = glm::vec3(0.0,0.0,0.2);
-	CAMERA_UP = glm::vec3(0.0,0.0,1.0);*/
-    
-    GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
+	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
+	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
 	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
-    GLfloat mat_shininess[] = { 50.0 };
-    glShadeModel(GL_SMOOTH);
-    
-    glClearColor (0.0, 0.0, 0.0, 0.0);
-    
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-//    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	GLfloat mat_shininess[] = { 50.0 };
+	glShadeModel(GL_SMOOTH);
 
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_DEPTH_TEST);
+	glClearColor (0.0, 0.0, 0.0, 0.0);
 
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void keyPressed(unsigned char key, int x, int y) {
@@ -110,22 +99,22 @@ void keyPressed(unsigned char key, int x, int y) {
 		//toggle between filled and wireframe
 		WIREFRAME_ON = !WIREFRAME_ON;
 		break;
+	case 'p':
+		//toggle between ortho and perspective projection
+		PROJ_ORTHO = !PROJ_ORTHO;
 	case '=':
-		//CAMERA_POS = CAMERA_POS+(direction*CAMERA_STEP);
 		if (ZOOM_FACTOR*FOV>MIN_FOV){
 			ZOOM_FACTOR -= ZOOM_STEP;
 		}
 
 		break;
 	case '+':
-		//CAMERA_POS = CAMERA_POS+(direction*CAMERA_STEP);
 		if (ZOOM_FACTOR*FOV>MIN_FOV){
 			ZOOM_FACTOR -= ZOOM_STEP;
 		}
 
 		break;
 	case '-':
-		//CAMERA_POS = CAMERA_POS-(direction*CAMERA_STEP);
 		if(ZOOM_FACTOR*FOV<MAX_FOV){
 			ZOOM_FACTOR += ZOOM_STEP;
 		}
@@ -194,24 +183,17 @@ void myReshape(int w, int h) {
 	float aspect_ratio = ((float)w)/((float)h);
 
 	glViewport (0,0,viewport.w,viewport.h);
-	
+
 	glMatrixMode(GL_PROJECTION);
-
 	glLoadIdentity();
-	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
-	//gluPerspective(45.0f,aspect_ratio,CAMERA_POS[2]-1.0f,CAMERA_POS[2]-1000000.0f);
-	////glOrtho(CAMERA_POS[0]-1,CAMERA_POS[0]+1,CAMERA_POS[1]-1,CAMERA_POS[1]+1,CAMERA_POS[2]-1,CAMERA_POS[2]-100000.0f);
-	//gluLookAt(CAMERA_POS[0],CAMERA_POS[1],CAMERA_POS[2],CAMERA_LOOK[0],CAMERA_LOOK[1],CAMERA_LOOK[2],
-	//		  CAMERA_UP[0],CAMERA_UP[1],CAMERA_UP[2]);
-
-	//glPushMatrix();
-	//glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
-	 // look into this later
-//    glOrtho(-20,20,-20,20,20,-20); // elephant view
-//    glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
-//    glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
-//	glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
-	//glPopMatrix();
+	if (PROJ_ORTHO){
+		//Orthographic Projection
+		glOrtho(scene.left*ZOOM_FACTOR,scene.right*ZOOM_FACTOR,scene.bottom*ZOOM_FACTOR,scene.top*ZOOM_FACTOR,
+			scene.z_near,scene.z_far);
+	}else{
+		//Perspective Projection
+		gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
+	}
 }
 
 void myDisplay() {
@@ -224,32 +206,29 @@ void myDisplay() {
 	float aspect_ratio = ((float)w)/((float)h);
 
 	glViewport (0,0,viewport.w,viewport.h);
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//Orthographic Projection
-	glOrtho(scene.left*ZOOM_FACTOR,scene.right*ZOOM_FACTOR,scene.bottom*ZOOM_FACTOR,scene.top*ZOOM_FACTOR,
-		    scene.z_near,scene.z_far);
+	if (PROJ_ORTHO){
+		//Orthographic Projection
+		glOrtho(scene.left*ZOOM_FACTOR,scene.right*ZOOM_FACTOR,scene.bottom*ZOOM_FACTOR,scene.top*ZOOM_FACTOR,
+			scene.z_near,scene.z_far);
+	}else{
+		//Perspective Projection
+		gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
+	}
 
-	//cout<<scene.left<<','<<scene.right<<endl;
-	//cout<<scene.bottom<<','<<scene.top<<endl;
-	//cout<<scene.z_near<<','<<scene.z_far<<'\n'<<endl;
+	if (SMOOTH_SHADING_ON) {
+		glShadeModel(GL_SMOOTH);
+	} else {
+		glShadeModel(GL_FLAT);
+	}
 
-	////Perspective Projection
-	//gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
-    
-    if (SMOOTH_SHADING_ON) {
-        glShadeModel(GL_SMOOTH);
-    } else {
-        glShadeModel(GL_FLAT);
-    }
-
-    
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(scene.camera_pos.x,scene.camera_pos.y,scene.camera_pos.z,
-			  scene.camera_look.x,scene.camera_look.y,scene.camera_look.z,
-			  scene.camera_up.x,scene.camera_up.y,scene.camera_up.z);
+		scene.camera_look.x,scene.camera_look.y,scene.camera_look.z,
+		scene.camera_up.x,scene.camera_up.y,scene.camera_up.z);
 
 	//glLoadIdentity();
 	glPushMatrix();
@@ -269,35 +248,35 @@ void myDisplay() {
 			if (WIREFRAME_ON){
 				glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
 				glPolygonMode(GL_BACK, GL_LINE);
-                
-                glDisable(GL_LIGHTING);
-                glClearColor (0.0, 0.0, 0.0, 0.0);
-                glColor3f(1.0f,1.0f,1.0f);
-                
+
+				glDisable(GL_LIGHTING);
+				glClearColor (0.0, 0.0, 0.0, 0.0);
+				glColor3f(1.0f,1.0f,1.0f);
+
 				glBegin(GL_POLYGON);
-				
+
 				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 				glVertex3f(a.point[0],a.point[1],a.point[2]);
-                glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+				glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 				glVertex3f(b.point[0],b.point[1],b.point[2]);
-                glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+				glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 				glVertex3f(c.point[0],c.point[1],c.point[2]);
 				glEnd();
 
 				glPolygonMode(GL_FRONT, GL_FILL); // fill mode
 				glPolygonMode(GL_BACK, GL_FILL);
 			}else{
-                glEnable(GL_LIGHTING);
-                
+				glEnable(GL_LIGHTING);
+
 				glBegin(GL_POLYGON);
-				
+
 				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
 				glVertex3f(a.point[0],a.point[1],a.point[2]);
-                glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+				glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
 				glVertex3f(b.point[0],b.point[1],b.point[2]);
-                glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+				glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
 				glVertex3f(c.point[0],c.point[1],c.point[2]);
-				
+
 				glEnd();
 			}
 		}
@@ -315,17 +294,23 @@ int main(int argc, char* argv[]){
 	bool use_adaptive = false;
 
 	if (argc<2){
-		cout<<"Not enough parameters"<<endl;
+		cout<<"Not enough parameters."<<endl;
 		exit(1);
 	}
 
 	string filename = argv[1];
+	cout<<"Input file :"<<filename<<'\n'<<endl;
 	float subdivision_param = atof(argv[2]); //takes on different meaning depending on whether using uniform or adapative (size vs error)
 	scene.step = subdivision_param;
 
 	if (argc > 3){
 		//not checking third paramter. Assuming good input. Should handle case of bad input later
 		use_adaptive = true;
+		cout<<"Subdivision type: "<<"adaptive."<<endl;
+		cout<<"Error tolerance: "<<subdivision_param<<'\n'<<endl;
+	}else{
+		cout<<"Subdivision type: "<<"uniform."<<'.\n'<<endl;
+		cout<<"Step size: "<<subdivision_param<<'\n'<<endl;
 	}
 
 	/*
@@ -337,8 +322,10 @@ int main(int argc, char* argv[]){
 
 	ifstream inpfile(filename.c_str());
 	if(!inpfile.is_open()) {
-		cout << "Unable to open file" << endl;
+		cout << "Unable to open file." << endl;
+		exit(1);
 	} else {
+		cout<< "File opened successfully. Beginning to parse input file.\n"<<endl;
 		string line;
 		while(inpfile.good()) {
 			vector<string> splitline;
@@ -349,6 +336,7 @@ int main(int argc, char* argv[]){
 				splitline.push_back(buf);
 			}
 			//blank lines, increment patch number
+
 			if(splitline.size() == 0) {
 				current_patch++;
 			}
@@ -380,13 +368,17 @@ int main(int argc, char* argv[]){
 			else{
 				std::cerr << "Unknown command: " << splitline[0] << std::endl;
 			}
-
 		}
 	}
 
+	cout<<"Finished parsing input file. Initializing subdivision of patches.\n"<<endl;
 	scene.subdivide_patch(use_adaptive); //does uniform tessellation if use_adaptive is false
+
+	cout<<"Finished subdividing patches. Setting scene and camera.\n"<<endl;
 	scene.set_min_max();
 	scene.set_camera_pos();
+
+	cout<<"Total number of triangles to render: "<<scene.number_of_triangles<<'\n'<<endl;
 
 	glutInit(&argc, argv);
 
@@ -401,12 +393,13 @@ int main(int argc, char* argv[]){
 	glutInitWindowPosition(0,0);
 	glutCreateWindow("Tyler and Zack AS3");
 
+	cout<<"Initializing the scene and rendering the triangles.\n"<<endl;
 	initScene();							// quick function to set up scene
 
 	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
-	//glutReshapeFunc(myReshape);				// function to run when the window gets resized
-    glutIdleFunc(myDisplay);                // function to run when idle
-    
+	glutReshapeFunc(myReshape);				// function to run when the window gets resized
+	glutIdleFunc(myDisplay);                // function to run when idle
+
 	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
 	glutSpecialFunc(keySpecial);
 

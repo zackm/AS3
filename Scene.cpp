@@ -13,18 +13,24 @@ void Scene::add_patch(BezierPatch current_patch) {
 
 void Scene::subdivide_patch(bool use_adaptive) {
 	glm::vec3 current_geo;
+	int n = patch_list.size();
 
+	cout<<"Patches to subdivide: "<<n<<'\n'<<endl;
+	cout<<"Patches completed: "<<0<<'/'<<n<<endl;
 	if (use_adaptive){
 		for (int i = 0; i < patch_list.size(); i++) {
 			patch_list[i].adaptive_subdivide(step);
+			cout<<"Patches completed: "<<i+1<<'/'<<n<<endl;
+			number_of_triangles += patch_list[i].tri_list.size();
 		}
 	}else{
 		for (int i = 0; i < patch_list.size(); i++) {
 			patch_list[i].uniform_subdivide(step); //should rename step to tol to reduce confusion
+			cout<<"Patches completed: "<<i+1<<'/'<<n<<endl;
+			number_of_triangles += patch_list[i].tri_list.size();
 		}
 	}
 }
-
 
 //this can set camera based on patches probably, not necessarily the LocalGeo
 void Scene::set_min_max() {
@@ -46,8 +52,6 @@ void Scene::set_min_max() {
 		}
 	}
 
-	//cout<<max.x<<','<<min.x<<endl;
-	//cin.get();
 	max.x = x_max;
 	max.y = y_max;
 	max.z = z_max;

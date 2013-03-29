@@ -20,6 +20,7 @@ class Scene {
 public:
     vector<BezierPatch> patch_list;
     glm::vec3 min, max;
+	int number_of_triangles;
 
 	glm::vec3 camera_pos;
 	glm::vec3 camera_look;
@@ -32,7 +33,7 @@ public:
     
     float step;
     
-    Scene(void){};
+    Scene(void){number_of_triangles = 0;};
     void add_patch(BezierPatch);
     void subdivide_patch(bool);
     void set_min_max();
