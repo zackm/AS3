@@ -23,7 +23,8 @@ void LocalGeo::set_curvatures(){
 
 	first_form[0][0] = glm::dot(partial_u,partial_u);
 	first_form[1][1] = glm::dot(partial_v,partial_v);
-	first_form[0][1] = first_form[1][0] = glm::dot(partial_u,partial_v); //symmetric
+	first_form[0][1] = glm::dot(partial_u,partial_v); //symmetric so shouldn't need to do this.
+	first_form[1][0] = glm::dot(partial_v,partial_u);
 
 	float g = glm::determinant(first_form);
 
@@ -36,21 +37,26 @@ void LocalGeo::set_curvatures(){
 
 	second_form[0][0] = glm::dot(partial_uu,normal);
 	second_form[1][1] = glm::dot(partial_vv,normal);
-	second_form[0][1] = second_form[1][0] = glm::dot(partial_uv,normal);
+	second_form[0][1] = glm::dot(partial_uv,normal); //should be symmetric, but getting different answers.
+	second_form[1][0] = glm::dot(partial_vu,normal);
 
 	upper_second_form[0][0] = second_form[0][0]*inv[0][0]+second_form[0][1]*inv[1][0];
 	upper_second_form[1][1] = second_form[1][0]*inv[0][1]+second_form[1][1]*inv[1][1];
 	upper_second_form[0][1] = second_form[0][0]*inv[0][1]+second_form[0][1]*inv[1][1];
 	upper_second_form[1][0] = second_form[1][0]*inv[0][0]+second_form[1][1]*inv[1][0];
 
-	gaussian_curvature = glm::determinant(upper_second_form);
-	mean_curvature = (upper_second_form[0][0]+upper_second_form[1][1])/(2.0f);
+	//solve for principal curvatures using quadratic formula
+	//might want to check discrim prior to square rooting
+	float a,b,c,discrim;
+	a = 1.0f;
+	b = -(upper_second_form[0][0]+upper_second_form[1][1]);
+	c = upper_second_form[0][0]*upper_second_form[1][1] - upper_second_form[0][1]*upper_second_form[1][0];
+	principal_curvatures[0] = .5f*a*(-(b)+glm::sqrt(b*b-4.0f*a*c));
+	principal_curvatures[1] = (1/(2.0f*a))*(-(b)-glm::sqrt(b*b-4.0f*a*c));
 
-	////Signed curvature mapped to [0,1]
-	//gaussian_curvature = (glm::atan(gaussian_curvature)+(PI/2))/(PI);
-	//mean_curvature = (glm::atan(mean_curvature)+(PI/2))/(PI);
+	gaussian_curvature = principal_curvatures[0]*principal_curvatures[1];
+	mean_curvature = .5f*(principal_curvatures[0]+principal_curvatures[1]);
 
-	////Unsigned curvature mapped to [0,1]
-	//gaussian_curvature = glm::atan(gaussian_curvature)/PI;
-	//mean_curvature = glm::atan(mean_curvature)/PI;
+	max_curvature = glm::max(principal_curvatures[0],principal_curvatures[1]);
+	min_curvature = glm::min(principal_curvatures[0],principal_curvatures[1]);
 }

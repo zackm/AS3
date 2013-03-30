@@ -83,15 +83,17 @@ LocalGeo BezierPatch::patch_interp(float u, float v){
 	}
 	BezierCurve u_deriv(u_deriv_points);
 
-	LocalTangent second_u,second_v,mixed_partial;
+	LocalTangent second_u,second_v,mixed_partial_uv,mixed_partial_vu;
 
 	second_u = curve_interp(u_deriv,u);
 	second_v = curve_interp(v_deriv,v);
-	mixed_partial = curve_interp(u_deriv,v);
+	mixed_partial_uv = curve_interp(u_deriv,v);
+	mixed_partial_vu = curve_interp(v_deriv,u);
 
 	l_geo.partial_uu = second_u.deriv;
 	l_geo.partial_vv = second_v.deriv;
-	l_geo.partial_uv = mixed_partial.deriv;
+	l_geo.partial_uv = mixed_partial_uv.deriv;
+	l_geo.partial_vu = mixed_partial_vu.deriv;
 	l_geo.set_curvatures();
 	return l_geo;
 }
