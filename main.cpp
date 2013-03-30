@@ -508,6 +508,7 @@ int main(int argc, char* argv[]){
 	string filename = argv[1];
 	cout<<"Input file : "<<filename<<endl;
     
+    // OBJ File Parsing
     if (filename.find(".obj") != std::string::npos) {
         cout<<"File Format: .obj"<<endl;
         OBJ_ON = true;
@@ -563,6 +564,7 @@ int main(int argc, char* argv[]){
                 }
                 
                 else if(!splitline[0].compare("v")){
+                    // add vertex to list
                     float x = atof(splitline[1].c_str());
                     float y = atof(splitline[2].c_str());
                     float z = atof(splitline[3].c_str());
@@ -572,7 +574,8 @@ int main(int argc, char* argv[]){
                 else if(!splitline[0].compare("f")) {
                     int a_point,b_point,c_point,a_point_norm,b_point_norm,c_point_norm;
                     glm::vec3 a,b,c;
-                                        
+                    // add triangle to list, four different parsing options:
+                    // v for vertex, t for vextex texture (ignored), n for normal
                     // face with vertecies v
                     // face with vertex textures v/t
                     // face with vertex norms v//n
@@ -601,7 +604,7 @@ int main(int argc, char* argv[]){
                         pos = splitline[3].find("/");
                         c_point = atoi(splitline[3].substr(0,pos).c_str());
                         c_point_norm = atoi(splitline[3].substr(pos+2).c_str());
-
+                        
                     }
                     else if (count == 2) {
                         // case: f v/t/n
@@ -620,7 +623,7 @@ int main(int argc, char* argv[]){
                         c_point = atoi(splitline[3].substr(0,pos).c_str());
                         pos = splitline[3].find("/",pos+1);
                         c_point_norm = atoi(splitline[3].substr(pos+1).c_str());
-
+                        
                     } else {
                         // case: f v
                         OBJ_NORM = false;
@@ -628,7 +631,7 @@ int main(int argc, char* argv[]){
                         b_point = atoi(splitline[2].c_str());
                         c_point = atoi(splitline[3].c_str());
                     }
-
+                    
                     a = vert_list[a_point];
                     b = vert_list[b_point];
                     c = vert_list[c_point];
@@ -650,6 +653,7 @@ int main(int argc, char* argv[]){
                 }
                 
                 else if(!splitline[0].compare("vn")) {
+                    // add vertex normal to list
                     OBJ_NORM = true;
                     float x = atof(splitline[1].c_str());
                     float y = atof(splitline[2].c_str());
@@ -658,7 +662,7 @@ int main(int argc, char* argv[]){
                 }
                 
                 else {
-                    std::cerr << "Unknown command: " << splitline[0] << std::endl;
+                    std::cout << "Unknown command: " << splitline[0] << std::endl;
                 }
             }
             
@@ -693,6 +697,7 @@ int main(int argc, char* argv[]){
         
     } else {
         
+        // BEZ File Parsing
         cout<<"File Format: .bez"<<endl;
         
         if (argc<2){
