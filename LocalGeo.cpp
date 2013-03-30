@@ -3,6 +3,19 @@
 
 //float PI = 3.1415926;
 
+LocalGeo::LocalGeo(glm::vec3 pt,glm::vec3 nm){
+	point = pt;
+    
+	float norm = glm::sqrt(glm::dot(nm,nm));
+    
+	if (norm>0){
+		nm /= norm;
+	}
+	normal = nm;
+    
+	gaussian_curvature = mean_curvature = 0;
+}
+
 LocalGeo::LocalGeo(glm::vec3 pt,glm::vec3 nm, glm::vec2 uv){
 	point = pt;
 
