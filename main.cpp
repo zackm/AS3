@@ -372,7 +372,8 @@ void myDisplay() {
                 glPolygonMode(GL_BACK, GL_FILL);
             } else{
                 glClearColor (0.0, 0.0, 0.0, 0.0);
-                glEnable(GL_LIGHTING); // temp
+                
+                glEnable(GL_LIGHTING);
                 
                 glBegin(GL_POLYGON);
                 
@@ -522,6 +523,9 @@ int main(int argc, char* argv[]){
             vector<glm::vec3> vert_list;
             vector<glm::vec3> norm_list;
             
+            // fill first position for proper vertex numbering
+            vert_list.push_back(glm::vec3(0,0,0));
+            
             while(inpfile.good()) {
                 vector<string> splitline;
                 string buf;
@@ -566,7 +570,7 @@ int main(int argc, char* argv[]){
                 }
                 
                 else if(!splitline[0].compare("f")) {
-                    int a_point,b_point,c_point;
+                    int a_point,b_point,c_point,a_point_norm,b_point_norm,c_point_norm;
                     glm::vec3 a,b,c;
                                         
                     // face with vertecies v
@@ -576,6 +580,7 @@ int main(int argc, char* argv[]){
                     int count = slash_count(splitline[1]);
                     if (count == 1) {
                         // case: f v/t
+                        OBJ_NORM = false;
                         int pos = splitline[1].find("/");
                         a_point = atoi(splitline[1].substr(0,pos).c_str());
                         pos = splitline[2].find("/");
@@ -588,24 +593,37 @@ int main(int argc, char* argv[]){
                         OBJ_NORM = true;
                         int pos = splitline[1].find("/");
                         a_point = atoi(splitline[1].substr(0,pos).c_str());
+                        a_point_norm = atoi(splitline[1].substr(pos+2).c_str());
                         pos = splitline[2].find("/");
                         b_point = atoi(splitline[2].substr(0,pos).c_str());
+                        b_point_norm = atoi(splitline[2].substr(pos+2).c_str());
+                        
                         pos = splitline[3].find("/");
                         c_point = atoi(splitline[3].substr(0,pos).c_str());
-                        // handle normal numbers
+                        c_point_norm = atoi(splitline[3].substr(pos+2).c_str());
+
                     }
                     else if (count == 2) {
                         // case: f v/t/n
                         OBJ_NORM = true;
                         int pos = splitline[1].find("/");
                         a_point = atoi(splitline[1].substr(0,pos).c_str());
+                        pos = splitline[1].find("/",pos+1);
+                        a_point_norm = atoi(splitline[1].substr(pos+1).c_str());
+                        
                         pos = splitline[2].find("/");
                         b_point = atoi(splitline[2].substr(0,pos).c_str());
+                        pos = splitline[2].find("/",pos+1);
+                        b_point_norm = atoi(splitline[2].substr(pos+1).c_str());
+                        
                         pos = splitline[3].find("/");
                         c_point = atoi(splitline[3].substr(0,pos).c_str());
-                        // handle normal numbers
+                        pos = splitline[3].find("/",pos+1);
+                        c_point_norm = atoi(splitline[3].substr(pos+1).c_str());
+
                     } else {
                         // case: f v
+                        OBJ_NORM = false;
                         a_point = atoi(splitline[1].c_str());
                         b_point = atoi(splitline[2].c_str());
                         c_point = atoi(splitline[3].c_str());
@@ -617,9 +635,9 @@ int main(int argc, char* argv[]){
                     
                     glm::vec3 a_norm, b_norm, c_norm;
                     if (OBJ_NORM) {
-                        a_norm = norm_list[a_point];
-                        b_norm = norm_list[b_point];
-                        c_norm = norm_list[c_point];
+                        a_norm = norm_list[a_point_norm];
+                        b_norm = norm_list[b_point_norm];
+                        c_norm = norm_list[c_point_norm];
                     } else {
                         a_norm.x = 0,a_norm.y = 0,a_norm.z = 0;
                         b_norm.x = 0,b_norm.y = 0,b_norm.z = 0;
