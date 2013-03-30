@@ -372,7 +372,7 @@ void myDisplay() {
                 glPolygonMode(GL_BACK, GL_FILL);
             } else{
                 glClearColor (0.0, 0.0, 0.0, 0.0);
-                glEnable(GL_LIGHTING);
+                glEnable(GL_LIGHTING); // temp
                 
                 glBegin(GL_POLYGON);
                 
@@ -483,6 +483,21 @@ void myDisplay() {
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
 }
 
+/*
+ Helper method for obj file parsing. Finds the number of slashes in
+ a face reference.
+ */
+int slash_count(string s) {
+    int count = 0;
+    int pos = 0;
+    while (s.find("/", pos) != std::string::npos) {
+        count++;
+        int curr_pos = s.find("/",pos);
+        pos = curr_pos + 1;
+    }
+    return count;
+}
+
 int main(int argc, char* argv[]){
 	/*
      parse command line arguments
@@ -530,6 +545,18 @@ int main(int argc, char* argv[]){
                     // ignore s commands
                     continue;
                 }
+                else if(!splitline[0].compare("g")){
+                    // ignore g commands
+                    continue;
+                }
+                else if(!splitline[0].compare("vt")){
+                    // ignore vertex texture commands
+                    continue;
+                }
+                else if(!splitline[0].compare("usemtl")){
+                    // ignore material commands
+                    continue;
+                }
                 
                 else if(!splitline[0].compare("v")){
                     float x = atof(splitline[1].c_str());
@@ -539,12 +566,55 @@ int main(int argc, char* argv[]){
                 }
                 
                 else if(!splitline[0].compare("f")) {
-                    int a_point = atoi(splitline[1].c_str());
-                    int b_point = atoi(splitline[2].c_str());
-                    int c_point = atoi(splitline[3].c_str());
-                    glm::vec3 a = vert_list[a_point];
-                    glm::vec3 b = vert_list[b_point];
-                    glm::vec3 c = vert_list[c_point];
+                    int a_point,b_point,c_point;
+                    glm::vec3 a,b,c;
+                                        
+                    // face with vertecies v
+                    // face with vertex textures v/t
+                    // face with vertex norms v//n
+                    // face with text and norms v/t/n
+                    int count = slash_count(splitline[1]);
+                    if (count == 1) {
+                        // case: f v/t
+                        int pos = splitline[1].find("/");
+                        a_point = atoi(splitline[1].substr(0,pos).c_str());
+                        pos = splitline[2].find("/");
+                        b_point = atoi(splitline[2].substr(0,pos).c_str());
+                        pos = splitline[3].find("/");
+                        c_point = atoi(splitline[3].substr(0,pos).c_str());
+                    }
+                    else if (splitline[1].find("//") != std::string::npos) {
+                        // case: f v//n
+                        OBJ_NORM = true;
+                        int pos = splitline[1].find("/");
+                        a_point = atoi(splitline[1].substr(0,pos).c_str());
+                        pos = splitline[2].find("/");
+                        b_point = atoi(splitline[2].substr(0,pos).c_str());
+                        pos = splitline[3].find("/");
+                        c_point = atoi(splitline[3].substr(0,pos).c_str());
+                        // handle normal numbers
+                    }
+                    else if (count == 2) {
+                        // case: f v/t/n
+                        OBJ_NORM = true;
+                        int pos = splitline[1].find("/");
+                        a_point = atoi(splitline[1].substr(0,pos).c_str());
+                        pos = splitline[2].find("/");
+                        b_point = atoi(splitline[2].substr(0,pos).c_str());
+                        pos = splitline[3].find("/");
+                        c_point = atoi(splitline[3].substr(0,pos).c_str());
+                        // handle normal numbers
+                    } else {
+                        // case: f v
+                        a_point = atoi(splitline[1].c_str());
+                        b_point = atoi(splitline[2].c_str());
+                        c_point = atoi(splitline[3].c_str());
+                    }
+
+                    a = vert_list[a_point];
+                    b = vert_list[b_point];
+                    c = vert_list[c_point];
+                    
                     glm::vec3 a_norm, b_norm, c_norm;
                     if (OBJ_NORM) {
                         a_norm = norm_list[a_point];
@@ -599,6 +669,9 @@ int main(int argc, char* argv[]){
         }
         cout<<"Input file parsed."<<endl;
         cout<<"Total number of triangles to render: "<<tri_vec.size()<<'\n'<<endl;
+        if (!OBJ_NORM) {
+            cout<<"No normals detected. View in wireframe mode only."<<endl;
+        }
         
     } else {
         
@@ -689,7 +762,7 @@ int main(int argc, char* argv[]){
         cout<<"Total number of triangles to render: "<<scene.number_of_triangles<<'\n'<<endl;
     }
     
-      scene.set_camera_pos();
+    scene.set_camera_pos();
     
 	glutInit(&argc, argv);
     
