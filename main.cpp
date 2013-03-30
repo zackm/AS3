@@ -39,31 +39,72 @@ public:
 Viewport	viewport;
 Scene scene;
 
-const float CAMERA_STEP = .15;
-const float OBJECT_STEP = .15;
-const float OBJECT_ROT = 5.0f; //taking it to mean five degrees
+float PI = 3.1415926;
 
-//Values which will affect the object or camera orientation
-glm::vec3 TRANSLATE(0.0,0.0,0.0); //moving object
+const float OBJECT_STEP = .15; //The amount the translation matrix is changed.
+const float OBJECT_ROT = 5.0f; //The amount the rotation matrix is changed(5.0 degrees).
 
-float ZOOM_FACTOR = 1.0f;
-float ZOOM_STEP = .05;
-float FOV = 30.0f;
+glm::vec3 TRANSLATE(0.0,0.0,0.0); //The amount to translate the object.
+
+float ZOOM_FACTOR = 1.0f; //The amount that the camera is zoomed on the object
+float ZOOM_STEP = .05; //The amount the ZOOM_FACTOR is changed.
+float FOV = 30.0f; //The detault field of view.
 float MAX_FOV = 170.0f;
 float MIN_FOV = 10.0f;
 
-float HORIZONTAL_ROT = 0;
-float VERTICAL_ROT = 0;
+float HORIZONTAL_ROT = 0; //The amount to rotate the object by horizontally (in degrees)
+float VERTICAL_ROT = 0; //Vertically.
 
-bool WIREFRAME_ON, SMOOTH_SHADING_ON, PROJ_ORTHO,MEAN_CURVATURE_ON,GAUSS_CURVATURE_ON;
+bool WIREFRAME_ON, SMOOTH_SHADING_ON, PROJ_ORTHO,MEAN_CURVATURE_ON, //Booleans which determine type of projection (ortho or perspective)
+	 GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON;			//as well as type of shading.
 
-void initScene(){
-	// Nothing to do here for this simple example.
-	SMOOTH_SHADING_ON = true;
+/*
+When toggling between shading modes, this method is called to turn all shading modes off.
+Then we can turn on only the single shading mode we want.
+*/
+void reset_shading_mode(){
 	WIREFRAME_ON = false;
-	PROJ_ORTHO = true; //false means use perspective instead of ortho.
 	GAUSS_CURVATURE_ON = false;
 	MEAN_CURVATURE_ON = false;
+	MAX_CURVATURE_ON = false;
+	MIN_CURVATURE_ON = false;
+}
+
+/*
+When shading the model using curvature, this helper method is called to make a vertex, 
+and normal and color the vertex accordingly. The color of the vertex is blue if the 
+curvature is positive, red if it is negative, and black if it is 0.
+*/
+void curvature_shading(float curvature,glm::vec3 point, glm::vec3 vector){
+	float red,blue;
+	if (curvature>0.0f){
+		red = 0.0f;
+		blue = 2.0f*glm::atan(curvature)/PI;
+	}else if(curvature<0.0f){
+		red = -2.0f*glm::atan(curvature)/PI;
+		blue = 0.0f;
+	}else{
+		red = 0.0f;
+		blue = 0.0f;
+	}
+	glClearColor (0.0, 0.0, 0.0, 0.0);
+	glColor3f(red,0.0f,blue);
+	glVertex3f(point[0],point[1],point[2]);
+	glNormal3f(vector[0],vector[1],vector[2]);
+}
+
+/*
+Default the scene to a single light with constant BRDF coefficients.
+Default to smooth shading using the light with orthographic projection
+*/
+void initScene(){
+	SMOOTH_SHADING_ON = true;
+	WIREFRAME_ON = false;
+	PROJ_ORTHO = true;
+	GAUSS_CURVATURE_ON = false;
+	MEAN_CURVATURE_ON = false;
+	MAX_CURVATURE_ON = false;
+	MIN_CURVATURE_ON = false;
 
 	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -85,39 +126,76 @@ void initScene(){
 	glEnable(GL_DEPTH_TEST);
 }
 
+/*
+Basic interaction with keyboard. Listed keys in switch statement toggle 
+between different shading and viewing modes. Plus and minus keys change
+field of view.
+*/
 void keyPressed(unsigned char key, int x, int y) {
-	float norm;
-	glm::vec3 direction;
-
 	switch(key){
 	case ' ':
 		exit(0);
+
 		break;
 	case 's':
 		//toggle between flat and smooth
 		SMOOTH_SHADING_ON = !SMOOTH_SHADING_ON;
+
 		break;
 	case 'w':
 		//toggle between filled and wireframe
-		WIREFRAME_ON = !WIREFRAME_ON;
+		if(WIREFRAME_ON){
+			reset_shading_mode();
+		}else{
+			reset_shading_mode();
+			WIREFRAME_ON = true;
+		}
+
 		break;
 	case 'p':
 		//toggle between ortho and perspective projection
 		PROJ_ORTHO = !PROJ_ORTHO;
+
 		break;
 	case 'g':
 		//toggle between gauss and mean curvature. Only one can be on at a time.
-		if (MEAN_CURVATURE_ON){
-			MEAN_CURVATURE_ON = false;
+		if(GAUSS_CURVATURE_ON){
+			reset_shading_mode();
+		}else{
+			reset_shading_mode();
+			GAUSS_CURVATURE_ON = true;
 		}
-		GAUSS_CURVATURE_ON = !GAUSS_CURVATURE_ON;
+
 		break;
 	case 'm':
 		//hold down h to see mean curvature (not a toggle switch)
-		if (GAUSS_CURVATURE_ON){
-			GAUSS_CURVATURE_ON = false;
+		if(MEAN_CURVATURE_ON){
+			reset_shading_mode();
+		}else{
+			reset_shading_mode();
+			MEAN_CURVATURE_ON = true;
 		}
-		MEAN_CURVATURE_ON = !MEAN_CURVATURE_ON;
+
+		break;
+	case '1':
+		//toggle max curvature on
+		if(MAX_CURVATURE_ON){
+			reset_shading_mode();
+		}else{
+			reset_shading_mode();
+			MAX_CURVATURE_ON = true;
+		}
+
+		break;
+	case '2':
+		//toggle min curvature on
+		if(MIN_CURVATURE_ON){
+			reset_shading_mode();
+		}else{
+			reset_shading_mode();
+			MIN_CURVATURE_ON = true;
+		}
+
 		break;
 	case '=':
 		if (ZOOM_FACTOR*FOV>MIN_FOV){
@@ -140,6 +218,10 @@ void keyPressed(unsigned char key, int x, int y) {
 	}
 }
 
+/*
+Special key refers to shift key. This is the same as keyPressed but keyPressed
+can't do special keys.
+*/
 void keySpecial(int key, int x, int y){
 	int key_modifier = glutGetModifiers();
 	glm::vec3 right(1,0,0);
@@ -152,18 +234,22 @@ void keySpecial(int key, int x, int y){
 		case GLUT_KEY_LEFT:
 			//translate left (object, not camera)
 			TRANSLATE = TRANSLATE - OBJECT_STEP*right;
+
 			break;
 		case GLUT_KEY_RIGHT:
 			//translate right
 			TRANSLATE = TRANSLATE + OBJECT_STEP*right;
+
 			break;
 		case GLUT_KEY_UP:
 			//translate up
 			TRANSLATE = TRANSLATE + OBJECT_STEP*up;
+
 			break;
 		case GLUT_KEY_DOWN:
 			//translate down
 			TRANSLATE = TRANSLATE - OBJECT_STEP*up;
+
 			break;
 		}
 		break;
@@ -173,18 +259,22 @@ void keySpecial(int key, int x, int y){
 		case GLUT_KEY_LEFT:
 			//rotate left (object, not camera)
 			HORIZONTAL_ROT += OBJECT_ROT;
+
 			break;
 		case GLUT_KEY_RIGHT:
 			//rotate right
 			HORIZONTAL_ROT -= OBJECT_ROT;
+
 			break;
 		case GLUT_KEY_UP:
 			//rotate up
 			VERTICAL_ROT += OBJECT_ROT;
+
 			break;
 		case GLUT_KEY_DOWN:
 			//rotate down
 			VERTICAL_ROT -= OBJECT_ROT;
+
 			break;
 		}
 	}
@@ -214,8 +304,6 @@ void myDisplay() {
 
 	int w = viewport.w;
 	int h = viewport.h;
-	//viewport.w = w;
-	//viewport.h = h;
 	float aspect_ratio = ((float)w)/((float)h);
 
 	glViewport (0,0,viewport.w,viewport.h);
@@ -250,7 +338,6 @@ void myDisplay() {
 	glRotatef(HORIZONTAL_ROT,1,0,0); //horizontal rotate
 	glRotatef(VERTICAL_ROT,0,1,0);//vertical rotate
 	Triangle tri;
-	float a_color,b_color,c_color;
 	for (int j = 0; j < scene.patch_list.size(); j++) {
 		BezierPatch bez = scene.patch_list[j];
 		for (int i = 0; i < bez.tri_list.size(); i++) {
@@ -280,73 +367,60 @@ void myDisplay() {
 
 				glPolygonMode(GL_FRONT, GL_FILL); // fill mode
 				glPolygonMode(GL_BACK, GL_FILL);
+			}else if(GAUSS_CURVATURE_ON){
+				glDisable(GL_LIGHTING);
+
+				glBegin(GL_POLYGON);
+
+				curvature_shading(a.gaussian_curvature,a.point,a.normal);
+				curvature_shading(b.gaussian_curvature,b.point,b.normal);
+				curvature_shading(c.gaussian_curvature,c.point,c.normal);
+
+				glEnd();
+			}else if(MEAN_CURVATURE_ON){
+				glDisable(GL_LIGHTING);
+
+				glBegin(GL_POLYGON);
+
+				curvature_shading(a.mean_curvature,a.point,a.normal);
+				curvature_shading(b.mean_curvature,b.point,b.normal);
+				curvature_shading(c.mean_curvature,c.point,c.normal);
+
+				glEnd();
+			}else if(MAX_CURVATURE_ON){
+				glDisable(GL_LIGHTING);
+
+				glBegin(GL_POLYGON);
+
+				curvature_shading(a.max_curvature,a.point,a.normal);
+				curvature_shading(b.max_curvature,b.point,b.normal);
+				curvature_shading(c.max_curvature,c.point,c.normal);
+
+				glEnd();
+			}else if(MIN_CURVATURE_ON){
+				glDisable(GL_LIGHTING);
+
+				glBegin(GL_POLYGON);
+
+				curvature_shading(a.min_curvature,a.point,a.normal);
+				curvature_shading(b.min_curvature,b.point,b.normal);
+				curvature_shading(c.min_curvature,c.point,c.normal);
+
+				glEnd();
 			}else{
-				if (GAUSS_CURVATURE_ON){
-					glDisable(GL_LIGHTING);
+				glClearColor (0.0, 0.0, 0.0, 0.0);
+				glEnable(GL_LIGHTING);
 
-					glBegin(GL_POLYGON);
+				glBegin(GL_POLYGON);
 
-					a_color = glm::max(glm::min(a.gaussian_curvature,1.0f),0.0f);
-					b_color = glm::max(glm::min(b.gaussian_curvature,1.0f),0.0f);
-					c_color = glm::max(glm::min(c.gaussian_curvature,1.0f),0.0f);
+				glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+				glVertex3f(a.point[0],a.point[1],a.point[2]);
+				glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+				glVertex3f(b.point[0],b.point[1],b.point[2]);
+				glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+				glVertex3f(c.point[0],c.point[1],c.point[2]);
 
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(a_color,a_color,a_color);
-					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
-					glVertex3f(a.point[0],a.point[1],a.point[2]);
-
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(b_color,b_color,b_color);
-					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
-					glVertex3f(b.point[0],b.point[1],b.point[2]);
-
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(c_color,c_color,c_color);
-					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
-					glVertex3f(c.point[0],c.point[1],c.point[2]);
-
-					glEnd();
-				}else if(MEAN_CURVATURE_ON){
-					glDisable(GL_LIGHTING);
-
-					glBegin(GL_POLYGON);
-
-					a_color = glm::max(glm::min(a.mean_curvature,1.0f),0.0f);
-					b_color = glm::max(glm::min(b.mean_curvature,1.0f),0.0f);
-					c_color = glm::max(glm::min(c.mean_curvature,1.0f),0.0f);
-
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(a_color,a_color,a_color);
-					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
-					glVertex3f(a.point[0],a.point[1],a.point[2]);
-
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(b_color,b_color,b_color);
-					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
-					glVertex3f(b.point[0],b.point[1],b.point[2]);
-
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(c_color,c_color,c_color);
-					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
-					glVertex3f(c.point[0],c.point[1],c.point[2]);
-
-					glEnd();
-				}else{
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glEnable(GL_LIGHTING);
-
-					glBegin(GL_POLYGON);
-
-					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
-					glVertex3f(a.point[0],a.point[1],a.point[2]);
-					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
-					glVertex3f(b.point[0],b.point[1],b.point[2]);
-					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
-					glVertex3f(c.point[0],c.point[1],c.point[2]);
-
-					glEnd();
-
-				}
+				glEnd();
 			}
 		}
 	}
@@ -393,7 +467,7 @@ int main(int argc, char* argv[]){
 	if(!inpfile.is_open()) {
 		cout << "Unable to open file." << endl;
 		exit(1);
-	} else {
+	}else{
 		cout<< "File opened successfully. Beginning to parse input file.\n"<<endl;
 		string line;
 		while(inpfile.good()) {
