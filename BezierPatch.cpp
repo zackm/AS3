@@ -26,12 +26,12 @@ glm::vec3 BezierPatch::deCasteljau(BezierCurve bez_cur,float u){
 LocalTangent BezierPatch::curve_interp(BezierCurve bez_cur,float u){
 	glm::vec3 p = deCasteljau(bez_cur,u);
 
-	float degree = bez_cur.number_points();
+	float n = bez_cur.number_points();
 	//generate the first derivative curve.
 	vector<glm::vec3> deriv_points;
 	glm::vec3 d_point;
-	for(int i = 0; i<bez_cur.number_points()-1; i++){
-		d_point = (degree-1)*(bez_cur[i+1]-bez_cur[i]);
+	for(int i = 0; i<n-1; i++){
+		d_point = (n-1)*(bez_cur[i+1]-bez_cur[i]);
 		deriv_points.push_back(d_point);
 	}
 

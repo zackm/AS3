@@ -13,7 +13,7 @@ public:
 	float gaussian_curvature,mean_curvature,max_curvature,min_curvature;
 	glm::vec2 principal_curvatures;
 
-	LocalGeo(void){gaussian_curvature = mean_curvature = 0;};
+	LocalGeo(void){gaussian_curvature = mean_curvature = max_curvature = min_curvature = 0;};
 	LocalGeo(glm::vec3,glm::vec3,glm::vec2);
 	~LocalGeo(void){};
 
