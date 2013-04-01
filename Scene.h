@@ -33,7 +33,7 @@ public:
     
     float step;
     
-    Scene(void){number_of_triangles = 0;};
+    Scene(void);
     void add_patch(BezierPatch);
     void subdivide_patch(bool);
     void set_min_max();

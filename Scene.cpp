@@ -7,12 +7,20 @@
 
 #include <limits>
 
+Scene::Scene(){
+	number_of_triangles = 0;
+	glm::vec3 camera_pos(0,0,0);
+	glm::vec3 camera_look(0,0,0);
+	glm::vec3 camera_up(0,0,0);
+	glm::vec3 min(0,0,0);
+	glm::vec3 max(0,0,0);
+}
+
 void Scene::add_patch(BezierPatch current_patch) {
 	patch_list.push_back(current_patch);
 }
 
 void Scene::subdivide_patch(bool use_adaptive) {
-	glm::vec3 current_geo;
 	int n = patch_list.size();
 
 	cout<<"Patches to subdivide: "<<n<<'\n'<<endl;
@@ -30,6 +38,7 @@ void Scene::subdivide_patch(bool use_adaptive) {
 			number_of_triangles += patch_list[i].tri_list.size();
 		}
 	}
+	set_min_max();
 }
 
 //this can set camera based on patches probably, not necessarily the LocalGeo
@@ -43,12 +52,13 @@ void Scene::set_min_max() {
 		BezierPatch b = patch_list[i];
 		for (int j = 0; j < b.geo_list.size(); j++) {
 			glm::vec3 p = b.geo_list[j].point;
-			x_min = glm::min(x_min,p.x);
-			y_min = glm::min(y_min,p.y);
-			z_min = glm::min(z_min,p.z);
-			x_max = glm::max(x_max,p.x);
-			y_max = glm::max(y_max,p.y);
-			z_max = glm::max(z_max,p.z);
+			x_min = glm::min(x_min,p[0]);
+			y_min = glm::min(y_min,p[1]);
+			z_min = glm::min(z_min,p[2]);
+
+			x_max = glm::max(x_max,p[0]);
+			y_max = glm::max(y_max,p[1]);
+			z_max = glm::max(z_max,p[2]);
 		}
 	}
 
@@ -58,6 +68,9 @@ void Scene::set_min_max() {
 	min.x = x_min;
 	min.y = y_min;
 	min.z = z_min;
+
+	//cout<<max.x<<','<<max.y<<','<<max.z<<endl;
+	//cout<<min.x<<','<<min.y<<','<<min.z<<endl;
 }
 
 void Scene::set_camera_pos(){
@@ -71,6 +84,8 @@ void Scene::set_camera_pos(){
 	right = center.x+diameter;
 	bottom = center.y-diameter;
 	top = center.y+diameter;
+	//z_near = center.z+diameter;
+	//z_far = center.z-diameter;
 	z_near = 1.0f;
 	z_far = z_near+10.0f*diameter;
 
@@ -81,5 +96,5 @@ void Scene::set_camera_pos(){
 	camera_look.y = center.y;
 	camera_look.z = center.z;
 	camera_up.x = camera_up.z = 0;
-	camera_up.z = 1.0f;
+	camera_up.y = 1.0f;
 }

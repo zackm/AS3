@@ -207,14 +207,17 @@ void BezierPatch::adaptive_subdivide(float tol){
 					//add current triangle to the final list. No split necessary.
 					tri_list.push_back(current_tri);
 				}else{
+					add_geo(bc_geo);
 					//split along bc.
 					Triangle tri1(bc_geo,b,a);
 					Triangle tri2(bc_geo,a,c);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
+
 				}
 			}else{
+				add_geo(ac_geo);
 				if(!bc_split){
 					//split along ac
 					Triangle tri1(ac_geo,b,a);
@@ -223,6 +226,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
 				}else{
+					add_geo(bc_geo);
 					//need to split ac and bc
 					Triangle tri1(bc_geo,b,a);
 					Triangle tri2(bc_geo,a,ac_geo);
@@ -234,6 +238,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 				}
 			}
 		}else{
+			add_geo(ab_geo);
 			if(!ac_split){
 				if(!bc_split){
 					//split along ab
@@ -243,6 +248,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
 				}else{
+					add_geo(bc_geo);
 					//need to split on ab and on bc
 					Triangle tri1(ab_geo,a,c);
 					Triangle tri2(ab_geo,c,bc_geo);
@@ -253,6 +259,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 					tri_queue.push(tri3);
 				}
 			}else{
+				add_geo(ac_geo);
 				if(!bc_split){
 					//need to split on ab and ac
 					Triangle tri1(ac_geo,c,b);
@@ -263,6 +270,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 					tri_queue.push(tri2);
 					tri_queue.push(tri3);
 				}else{
+					add_geo(bc_geo);
 					//need to split on all of them. Produces four triangles
 					Triangle tri1(a,ac_geo,ab_geo);
 					Triangle tri2(b,ab_geo,bc_geo);

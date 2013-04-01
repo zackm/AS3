@@ -14,7 +14,7 @@ public:
 	glm::vec2 principal_curvatures;
 
 	LocalGeo(void){gaussian_curvature = mean_curvature = max_curvature = min_curvature = 0;};
-	LocalGeo(glm::vec3,glm::vec3,glm::vec2);
+	//LocalGeo(glm::vec3,glm::vec3,glm::vec2);
     LocalGeo(glm::vec3,glm::vec3);
 	LocalGeo(glm::vec3,glm::vec3,glm::vec3,glm::vec3,glm::vec3,glm::vec3,glm::vec3,glm::vec3,glm::vec2);
 	~LocalGeo(void){};
