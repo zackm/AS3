@@ -9,91 +9,55 @@ int BezierPatch::size() {
 	return patch.size();
 }
 
-glm::vec3 BezierPatch::deCasteljau(BezierCurve bez_cur,float u){
-	int n = bez_cur.number_points();
-	if (n==2){
-		glm::vec3 interp_point = bez_cur[0]*(1.0f-u)+bez_cur[1]*u;
-		return interp_point;
-	}else{
-		vector<glm::vec3> new_curve;
-		for(int i = 0; i<n-1; i++){
-			new_curve.push_back(bez_cur[i]*(1.0f-u)+bez_cur[i+1]*u);
-		}
-		return deCasteljau(BezierCurve(new_curve),u);
-	}
-}
-
-LocalTangent BezierPatch::curve_interp(BezierCurve bez_cur,float u){
-	glm::vec3 p = deCasteljau(bez_cur,u);
-
-	float n = bez_cur.number_points();
-	//generate the first derivative curve.
-	vector<glm::vec3> deriv_points;
-	glm::vec3 d_point;
-	for(int i = 0; i<n-1; i++){
-		d_point = (n-1)*(bez_cur[i+1]-bez_cur[i]);
-		deriv_points.push_back(d_point);
-	}
-
-	BezierCurve first_deriv(deriv_points);
-
-	glm::vec3 dPdu = deCasteljau(first_deriv,u);
-
-	LocalTangent l_tan(p,dPdu);
-	return l_tan;
-}
-
 LocalGeo BezierPatch::patch_interp(float u, float v){
 	LocalGeo l_geo;
 
-	BezierCurve vcurve, ucurve;
-	for (int i = 0; i < 4; i++) {
-		vcurve[i] = curve_interp(v_curve(i), u).point;
-		ucurve[i] = curve_interp(u_curve(i), v).point;
-	}
-	LocalTangent u_local, v_local;
-	v_local = curve_interp(vcurve, v);
-	u_local = curve_interp(ucurve, u);
+	//Bernstein polnomial
+	//B0 = (1-x)^3;
+	//B1 = 3x(1-x)^2;
+	//B2 = 3x^2 (1-x);
+	//B3 = x^3;
 
-	glm::vec3 n = glm::cross(u_local.deriv, v_local.deriv);
-	if (glm::dot(n,n) != 0.0f) {
-		n = n / glm::sqrt(glm::dot(n,n));
+	//for points
+	float b_i[4] = { (1-u)*(1-u)*(1-u), 3.0f*u*(1-u)*(1-u), 3*u*u*(1-u), u*u*u};
+	float b_j[4] = { (1-v)*(1-v)*(1-v), 3.0f*v*(1-v)*(1-v), 3*v*v*(1-v), v*v*v};
+
+	float b_i_u[4] = { -3.0f*(1-u)*(1-u), 3.0f*(1-u)*(1-u)-6.0f*u*(1-u), 6*u*(1-u)-3*u*u, 3*u*u};
+	float b_j_v[4] = { -3.0f*(1-v)*(1-v), 3.0f*(1-v)*(1-v)-6.0f*v*(1-v), 6*v*(1-v)-3*v*v, 3*v*v};
+
+	float b_i_uu[4] = { 6.0f*(1-u), -6.0f*(1-u)-6.0f*(1-u)+6.0f*(u), 6*(1-u)-6*u-6*u, 6.0f*u};
+	float b_j_vv[4] = { 6.0f*(1-v), -6.0f*(1-v)-6.0f*(1-v)+6.0f*(v), 6*(1-v)-6*v-6*v, 6.0f*v};
+
+
+	int i,j;
+	glm::vec3 deriv_u,deriv_v,deriv_uu,deriv_vv,deriv_uv,point,normal;
+
+	point = deriv_u = deriv_v = deriv_uu = deriv_vv = deriv_uv = glm::vec3(0,0,0);
+	for (i = 0; i<4; i++){
+		for (j = 0; j<4; j++){
+			point += patch[i][j]*(b_i[i])*(b_j[j]);
+			deriv_u += patch[i][j]*(b_i_u[i])*(b_j[j]);
+			deriv_v += patch[i][j]*(b_i[i])*(b_j_v[j]);
+			deriv_uu += patch[i][j]*(b_i_uu[i])*(b_j[j]);
+			deriv_vv += patch[i][j]*(b_i[i])*(b_j_vv[j]);
+			deriv_uv += patch[i][j]*(b_i_u[i])*(b_j_v[j]);
+		}
+	}
+	glm::vec3 n = glm::cross(deriv_u,deriv_v);
+
+	float norm = glm::dot(n,n);
+	if (norm>0){
+		n /= glm::sqrt(norm);
 	}
 
 	l_geo.param_value = glm::vec2(u,v);
-	l_geo.point = u_local.point;
 	l_geo.normal = n;
-	l_geo.partial_u = u_local.deriv;
-	l_geo.partial_v = v_local.deriv;
-	
-	//now we generate the first derivative curve in order to get the second derive with u and v.
-	vector<glm::vec3> v_deriv_points;
-	glm::vec3 d_point;
-	for(int i = 0; i<vcurve.number_points()-1; i++){
-		d_point = 3.0f*(vcurve[i+1]-vcurve[i]);
-		v_deriv_points.push_back(d_point);
-	}
-	BezierCurve v_deriv(v_deriv_points);
-
-	//now for u
-	vector<glm::vec3> u_deriv_points;
-	for(int i = 0; i<ucurve.number_points()-1; i++){
-		d_point = 3.0f*(ucurve[i+1]-ucurve[i]);
-		u_deriv_points.push_back(d_point);
-	}
-	BezierCurve u_deriv(u_deriv_points);
-
-	LocalTangent second_u,second_v,mixed_partial_uv,mixed_partial_vu;
-
-	second_u = curve_interp(u_deriv,u);
-	second_v = curve_interp(v_deriv,v);
-	mixed_partial_uv = curve_interp(u_deriv,v);
-	mixed_partial_vu = curve_interp(v_deriv,u);
-
-	l_geo.partial_uu = second_u.deriv;
-	l_geo.partial_vv = second_v.deriv;
-	l_geo.partial_uv = mixed_partial_uv.deriv;
-	l_geo.partial_vu = mixed_partial_vu.deriv;
+	l_geo.point = point;
+	l_geo.partial_u = deriv_u;
+	l_geo.partial_v = deriv_v;
+	l_geo.partial_uu = deriv_uu;
+	l_geo.partial_vv = deriv_vv;
+	l_geo.partial_uv = l_geo.partial_vu = deriv_uv;
 	l_geo.set_curvatures();
 	return l_geo;
 }
@@ -343,3 +307,93 @@ void BezierPatch::adaptive_subdivide(float tol){
 		ab_split = ac_split = bc_split = false;
 	}
 }
+
+
+//LocalGeo BezierPatch::patch_interp(float u, float v){
+//	LocalGeo l_geo;
+//
+//	BezierCurve vcurve, ucurve;
+//	for (int i = 0; i < 4; i++) {
+//		vcurve[i] = curve_interp(v_curve(i), u).point;
+//		ucurve[i] = curve_interp(u_curve(i), v).point;
+//	}
+//	LocalTangent u_local, v_local;
+//	v_local = curve_interp(vcurve, v);
+//	u_local = curve_interp(ucurve, u);
+//
+//	glm::vec3 n = glm::cross(u_local.deriv, v_local.deriv);
+//	if (glm::dot(n,n) != 0.0f) {
+//		n = n / glm::sqrt(glm::dot(n,n));
+//	}
+//
+//	l_geo.param_value = glm::vec2(u,v);
+//	l_geo.point = u_local.point;
+//	l_geo.normal = n;
+//	l_geo.partial_u = u_local.deriv;
+//	l_geo.partial_v = v_local.deriv;
+//	
+//	//now we generate the first derivative curve in order to get the second derive with u and v.
+//	vector<glm::vec3> v_deriv_points;
+//	glm::vec3 d_point;
+//	for(int i = 0; i<vcurve.number_points()-1; i++){
+//		d_point = 3.0f*(vcurve[i+1]-vcurve[i]);
+//		v_deriv_points.push_back(d_point);
+//	}
+//	BezierCurve v_deriv(v_deriv_points);
+//
+//	//now for u
+//	vector<glm::vec3> u_deriv_points;
+//	for(int i = 0; i<ucurve.number_points()-1; i++){
+//		d_point = 3.0f*(ucurve[i+1]-ucurve[i]);
+//		u_deriv_points.push_back(d_point);
+//	}
+//	BezierCurve u_deriv(u_deriv_points);
+//
+//	LocalTangent second_u,second_v,mixed_partial_uv,mixed_partial_vu;
+//
+//	second_u = curve_interp(u_deriv,u);
+//	second_v = curve_interp(v_deriv,v);
+//	mixed_partial_uv = curve_interp(u_deriv,v);
+//	mixed_partial_vu = curve_interp(v_deriv,u);
+//
+//	l_geo.partial_uu = second_u.deriv;
+//	l_geo.partial_vv = second_v.deriv;
+//	l_geo.partial_uv = mixed_partial_uv.deriv;
+//	l_geo.partial_vu = mixed_partial_vu.deriv;
+//	l_geo.set_curvatures();
+//	return l_geo;
+//}
+
+//glm::vec3 BezierPatch::deCasteljau(BezierCurve bez_cur,float u){
+//	int n = bez_cur.number_points();
+//	if (n==2){
+//		glm::vec3 interp_point = bez_cur[0]*(1.0f-u)+bez_cur[1]*u;
+//		return interp_point;
+//	}else{
+//		vector<glm::vec3> new_curve;
+//		for(int i = 0; i<n-1; i++){
+//			new_curve.push_back(bez_cur[i]*(1.0f-u)+bez_cur[i+1]*u);
+//		}
+//		return deCasteljau(BezierCurve(new_curve),u);
+//	}
+//}
+//
+//LocalTangent BezierPatch::curve_interp(BezierCurve bez_cur,float u){
+//	glm::vec3 p = deCasteljau(bez_cur,u);
+//
+//	float n = bez_cur.number_points();
+//	//generate the first derivative curve.
+//	vector<glm::vec3> deriv_points;
+//	glm::vec3 d_point;
+//	for(int i = 0; i<n-1; i++){
+//		d_point = (n-1)*(bez_cur[i+1]-bez_cur[i]);
+//		deriv_points.push_back(d_point);
+//	}
+//
+//	BezierCurve first_deriv(deriv_points);
+//
+//	glm::vec3 dPdu = deCasteljau(first_deriv,u);
+//
+//	LocalTangent l_tan(p,dPdu);
+//	return l_tan;
+//}

@@ -658,7 +658,7 @@ int main(int argc, char* argv[]){
                 }
                 
                 else {
-                    std::cerr << "Unknown command: " << splitline[0] << std::endl;
+                    std::cout << "Unknown command: " << splitline[0] << std::endl;
                 }
             }
             
