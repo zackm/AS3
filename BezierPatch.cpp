@@ -1,6 +1,5 @@
 #include "BezierPatch.h"
 
-
 void BezierPatch::push_back(vector<glm::vec3> new_vec){
 	patch.push_back(new_vec);
 }
@@ -10,24 +9,23 @@ int BezierPatch::size() {
 }
 
 LocalGeo BezierPatch::patch_interp(float u, float v){
-	LocalGeo l_geo;
-
 	//Bernstein polnomial
 	//B0 = (1-x)^3;
 	//B1 = 3x(1-x)^2;
 	//B2 = 3x^2 (1-x);
 	//B3 = x^3;
 
-	//for points
+	//Bernstein polynomials
 	float b_i[4] = { (1-u)*(1-u)*(1-u), 3.0f*u*(1-u)*(1-u), 3*u*u*(1-u), u*u*u};
 	float b_j[4] = { (1-v)*(1-v)*(1-v), 3.0f*v*(1-v)*(1-v), 3*v*v*(1-v), v*v*v};
 
+	//First derivatives of Bernstein polynomials
 	float b_i_u[4] = { -3.0f*(1-u)*(1-u), 3.0f*(1-u)*(1-u)-6.0f*u*(1-u), 6*u*(1-u)-3*u*u, 3*u*u};
 	float b_j_v[4] = { -3.0f*(1-v)*(1-v), 3.0f*(1-v)*(1-v)-6.0f*v*(1-v), 6*v*(1-v)-3*v*v, 3*v*v};
 
+	//Second derivatives of Bernstein polynomials
 	float b_i_uu[4] = { 6.0f*(1-u), -6.0f*(1-u)-6.0f*(1-u)+6.0f*(u), 6*(1-u)-6*u-6*u, 6.0f*u};
 	float b_j_vv[4] = { 6.0f*(1-v), -6.0f*(1-v)-6.0f*(1-v)+6.0f*(v), 6*(1-v)-6*v-6*v, 6.0f*v};
-
 
 	int i,j;
 	glm::vec3 deriv_u,deriv_v,deriv_uu,deriv_vv,deriv_uv,point,normal;
@@ -50,34 +48,8 @@ LocalGeo BezierPatch::patch_interp(float u, float v){
 		n /= glm::sqrt(norm);
 	}
 
-	l_geo.param_value = glm::vec2(u,v);
-	l_geo.normal = n;
-	l_geo.point = point;
-	l_geo.partial_u = deriv_u;
-	l_geo.partial_v = deriv_v;
-	l_geo.partial_uu = deriv_uu;
-	l_geo.partial_vv = deriv_vv;
-	l_geo.partial_uv = l_geo.partial_vu = deriv_uv;
-	l_geo.set_curvatures();
+	LocalGeo l_geo(point,n,deriv_u,deriv_v,deriv_uu,deriv_vv,deriv_uv,deriv_uv,glm::vec2(u,v));
 	return l_geo;
-}
-
-BezierCurve BezierPatch::u_curve(int i){
-	vector<glm::vec3> cur;
-	cur.push_back(patch[i][0]);
-	cur.push_back(patch[i][1]);
-	cur.push_back(patch[i][2]);
-	cur.push_back(patch[i][3]);
-	return BezierCurve(cur);
-}
-
-BezierCurve BezierPatch::v_curve(int i){
-	vector<glm::vec3> cur;
-	cur.push_back(patch[0][i]);
-	cur.push_back(patch[1][i]);
-	cur.push_back(patch[2][i]);
-	cur.push_back(patch[3][i]);
-	return BezierCurve(cur);
 }
 
 void BezierPatch::add_geo(LocalGeo geo){
@@ -396,4 +368,22 @@ void BezierPatch::adaptive_subdivide(float tol){
 //
 //	LocalTangent l_tan(p,dPdu);
 //	return l_tan;
+//}
+
+//BezierCurve BezierPatch::u_curve(int i){
+//	vector<glm::vec3> cur;
+//	cur.push_back(patch[i][0]);
+//	cur.push_back(patch[i][1]);
+//	cur.push_back(patch[i][2]);
+//	cur.push_back(patch[i][3]);
+//	return BezierCurve(cur);
+//}
+//
+//BezierCurve BezierPatch::v_curve(int i){
+//	vector<glm::vec3> cur;
+//	cur.push_back(patch[0][i]);
+//	cur.push_back(patch[1][i]);
+//	cur.push_back(patch[2][i]);
+//	cur.push_back(patch[3][i]);
+//	return BezierCurve(cur);
 //}

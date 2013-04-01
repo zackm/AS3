@@ -696,7 +696,6 @@ int main(int argc, char* argv[]){
         }
         
     } else {
-        
         // BEZ File Parsing
         cout<<"File Format: .bez"<<endl;
         
@@ -807,7 +806,7 @@ int main(int argc, char* argv[]){
 	glutReshapeFunc(myReshape);				// function to run when the window gets resized
 	glutIdleFunc(myDisplay);                // function to run when idle
     
-	glutKeyboardFunc(keyPressed);			// end program when spacebar pressed
+	glutKeyboardFunc(keyPressed);
 	glutSpecialFunc(keySpecial);
     
 	glutMainLoop();

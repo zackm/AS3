@@ -32,7 +32,25 @@ LocalGeo::LocalGeo(glm::vec3 pt,glm::vec3 nm, glm::vec2 uv){
 	gaussian_curvature = mean_curvature = 0;
 }
 
+LocalGeo::LocalGeo(glm::vec3 pt,glm::vec3 nm,glm::vec3 u_deriv,glm::vec3 v_deriv,
+				   glm::vec3 uu_deriv,glm::vec3 vv_deriv, glm::vec3 uv_deriv, 
+				   glm::vec3 vu_deriv, glm::vec2 uv_value){
+					   point = pt;
+					   normal = nm;
+					   partial_u = u_deriv;
+					   partial_v = v_deriv;
+					   partial_uu = uu_deriv;
+					   partial_vv = vv_deriv;
+					   partial_uv = uv_deriv;
+					   partial_vu = vu_deriv;
+					   param_value = uv_value;
+					   set_curvatures();
+}
+
 void LocalGeo::set_curvatures(){
+	//initialize curvature to 0, then attempt to set them.
+	gaussian_curvature = mean_curvature = max_curvature = min_curvature = 0.0f;
+
 	glm::mat2 upper_second_form;
 
 	first_form[0][0] = glm::dot(partial_u,partial_u);
@@ -103,5 +121,4 @@ void LocalGeo::set_curvatures(){
 //	cout<<test_geo.max_curvature<<',';
 //	cout<<test_geo.min_curvature<<endl;
 //	cin.get();
-//
 //}

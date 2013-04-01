@@ -8,12 +8,6 @@
 #include <queue>
 
 #pragma once
-#include "LocalTangent.h"
-
-#pragma once
-#include "BezierCurve.h"
-
-#pragma once
 #include "LocalGeo.h"
 
 #pragma once
@@ -37,11 +31,11 @@ public:
 
     int size();
     
-	LocalTangent curve_interp(BezierCurve,float);
-	glm::vec3 deCasteljau(BezierCurve,float);
+	//LocalTangent curve_interp(BezierCurve,float);
+	//glm::vec3 deCasteljau(BezierCurve,float);
 	LocalGeo patch_interp(float,float);
-	BezierCurve u_curve(int);
-	BezierCurve v_curve(int);
+	//BezierCurve u_curve(int);
+	//BezierCurve v_curve(int);
     void add_geo(LocalGeo);
 
     void uniform_subdivide(float);
