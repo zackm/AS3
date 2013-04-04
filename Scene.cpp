@@ -1,8 +1,3 @@
-//
-//  Scene.cpp
-//  AS3
-//
-
 #include "Scene.h"
 
 #include <limits>
@@ -14,6 +9,7 @@ Scene::Scene(){
 	glm::vec3 camera_up(0,0,0);
 	glm::vec3 min(0,0,0);
 	glm::vec3 max(0,0,0);
+	tolerance = step = 0.0f;
 }
 
 void Scene::add_patch(BezierPatch current_patch) {
@@ -21,13 +17,14 @@ void Scene::add_patch(BezierPatch current_patch) {
 }
 
 void Scene::subdivide_patch(bool use_adaptive) {
+	float tolerance = step;
 	int n = patch_list.size();
 
 	cout<<"Patches to subdivide: "<<n<<'\n'<<endl;
 	cout<<"Patches completed: "<<0<<'/'<<n<<endl;
 	if (use_adaptive){
 		for (int i = 0; i < patch_list.size(); i++) {
-			patch_list[i].adaptive_subdivide(step);
+			patch_list[i].adaptive_subdivide(tolerance);
 			cout<<"Patches completed: "<<i+1<<'/'<<n<<endl;
 			number_of_triangles += patch_list[i].tri_list.size();
 		}
@@ -39,9 +36,9 @@ void Scene::subdivide_patch(bool use_adaptive) {
 		}
 	}
 	set_min_max();
+	set_camera_pos();
 }
 
-//this can set camera based on patches probably, not necessarily the LocalGeo
 void Scene::set_min_max() {
 	float x_min,y_min,z_min,x_max,y_max,z_max;
 
@@ -68,9 +65,6 @@ void Scene::set_min_max() {
 	min.x = x_min;
 	min.y = y_min;
 	min.z = z_min;
-
-	//cout<<max.x<<','<<max.y<<','<<max.z<<endl;
-	//cout<<min.x<<','<<min.y<<','<<min.z<<endl;
 }
 
 void Scene::set_camera_pos(){
@@ -84,8 +78,6 @@ void Scene::set_camera_pos(){
 	right = center.x+diameter;
 	bottom = center.y-diameter;
 	top = center.y+diameter;
-	//z_near = center.z+diameter;
-	//z_far = center.z-diameter;
 	z_near = 1.0f;
 	z_far = z_near+10.0f*diameter;
 

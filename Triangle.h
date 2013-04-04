@@ -6,9 +6,8 @@
 
 class Triangle{
 public:
-	//this class should aid with using barycentric coordiantes.
-	LocalGeo a,b,c; //points, normals, and param value
-	int divisions_remaining;
+	LocalGeo a,b,c; //three vertices a, b, and c.
+	int divisions_remaining; //divisions remaining only needed for adaptive tessellation.
 
 	Triangle(LocalGeo,LocalGeo,LocalGeo);
 	Triangle(LocalGeo,LocalGeo,LocalGeo,int);

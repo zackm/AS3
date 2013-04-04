@@ -55,8 +55,8 @@ float MIN_FOV = 10.0f;
 float HORIZONTAL_ROT = 0; //The amount to rotate the object by horizontally (in degrees)
 float VERTICAL_ROT = 0; //Vertically.
 
-bool WIREFRAME_ON, SMOOTH_SHADING_ON, PROJ_ORTHO,MEAN_CURVATURE_ON, //Booleans which determine type of projection (ortho or perspective)
-	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON;			//as well as type of shading.
+bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determine type of shading.
+	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON;
 bool OBJ_ON; // If an obj file is given as input.
 bool OBJ_NORM; // If vertex normals exist in obj file.
 vector<Triangle> tri_vec; // Vector of triangles from obj file;
@@ -103,19 +103,18 @@ void curvature_shading(float curvature,glm::vec3 point, glm::vec3 vector){
 
 /*
 Default the scene to a single light with constant BRDF coefficients.
-Default to smooth shading using the light with orthographic projection
+Default to smooth shading using the light with perspective projection.
 */
 void initScene(){
-    COLOR_ARRAY.push_back( glm::vec3( 0.5f, 0.0f, 0.7f ));
-    COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.7, 0.7 ));
-    COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.5, 0.0 ));
-    COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.2, 0.9 ));
-    COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.9, 0.0 ));
-    COLOR_ARRAY.push_back( glm::vec3( 0.7, 0.7, 0.7 ));
-    
+	COLOR_ARRAY.push_back( glm::vec3( 0.5f, 0.0f, 0.7f ));
+	COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.7, 0.7 ));
+	COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.5, 0.0 ));
+	COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.2, 0.9 ));
+	COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.9, 0.0 ));
+	COLOR_ARRAY.push_back( glm::vec3( 0.7, 0.7, 0.7 ));
+
 	SMOOTH_SHADING_ON = true;
 	WIREFRAME_ON = false;
-	PROJ_ORTHO = false;
 	GAUSS_CURVATURE_ON = false;
 	MEAN_CURVATURE_ON = false;
 	MAX_CURVATURE_ON = false;
@@ -142,15 +141,15 @@ void initScene(){
 }
 
 /* 
- Change the diffuse, specular, and ambient terms. Rotates between preset colors.
- */
+Change the diffuse, specular, and ambient terms. Rotates between preset colors.
+*/
 void change_color(){
-    glClearColor (0.0, 0.0, 0.0, 0.0);
-    glm::vec3 col = COLOR_ARRAY[COLOR_NUM];
-    GLfloat mat_specular[] = { col.x, col.y, col.z, 1.0 };
+	glClearColor (0.0, 0.0, 0.0, 0.0);
+	glm::vec3 col = COLOR_ARRAY[COLOR_NUM];
+	GLfloat mat_specular[] = { col.x, col.y, col.z, 1.0 };
 	GLfloat mat_diffuse[] = { col.x, col.y, col.z, 1.0 };
 	GLfloat mat_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
 	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
 }
@@ -179,11 +178,6 @@ void keyPressed(unsigned char key, int x, int y) {
 			reset_shading_mode();
 			WIREFRAME_ON = true;
 		}
-
-		break;
-	case 'p':
-		//toggle between ortho and perspective projection
-		PROJ_ORTHO = !PROJ_ORTHO;
 
 		break;
 	case 'g':
@@ -244,11 +238,11 @@ void keyPressed(unsigned char key, int x, int y) {
 		}
 
 		break;
-    case 'c':
-        COLOR_NUM += 1;
-        COLOR_NUM = COLOR_NUM % COLOR_ARRAY.size();
-        change_color();
-        break;
+	case 'c':
+		COLOR_NUM += 1;
+		COLOR_NUM = COLOR_NUM % COLOR_ARRAY.size();
+		change_color();
+		break;
 	}
 }
 
@@ -323,14 +317,7 @@ void myReshape(int w, int h) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	if (PROJ_ORTHO){
-		//Orthographic Projection
-		glOrtho(scene.left*ZOOM_FACTOR,scene.right*ZOOM_FACTOR,scene.bottom*ZOOM_FACTOR,scene.top*ZOOM_FACTOR,
-			scene.z_near,scene.z_far);
-	}else{
-		//Perspective Projection
-		gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
-	}
+	gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
 }
 
 void myDisplay() {
@@ -344,14 +331,7 @@ void myDisplay() {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	if (PROJ_ORTHO){
-		//Orthographic Projection
-		glOrtho(scene.left*ZOOM_FACTOR,scene.right*ZOOM_FACTOR,scene.bottom*ZOOM_FACTOR,scene.top*ZOOM_FACTOR,
-			scene.z_near,scene.z_far);
-	}else{
-		//Perspective Projection
-		gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
-	}
+	gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
 
 	//determine how to color the model
 	if (SMOOTH_SHADING_ON) {
@@ -362,12 +342,12 @@ void myDisplay() {
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	if(!PROJ_ORTHO){
-		gluLookAt(scene.camera_pos.x,scene.camera_pos.y,scene.camera_pos.z,
+
+	//set camera
+	gluLookAt(scene.camera_pos.x,scene.camera_pos.y,scene.camera_pos.z,
 		scene.camera_look.x,scene.camera_look.y,scene.camera_look.z,
 		scene.camera_up.x,scene.camera_up.y,scene.camera_up.z);
-	}
-	
+
 	//glLoadIdentity();
 	glPushMatrix();
 	glTranslatef(TRANSLATE[0],TRANSLATE[1],TRANSLATE[2]);
@@ -514,7 +494,7 @@ void myDisplay() {
 	glPopMatrix();
 
 	glFlush();
-	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
+	glutSwapBuffers();
 }
 
 /*
@@ -816,8 +796,6 @@ int main(int argc, char* argv[]){
 		cout<<"Total number of triangles to render: "<<scene.number_of_triangles<<'\n'<<endl;
 	}
 
-	scene.set_camera_pos();
-
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
@@ -833,11 +811,11 @@ int main(int argc, char* argv[]){
 
 	cout<<"Initializing the scene and rendering the triangles.\n"<<endl;
 
-	initScene();							// quick function to set up scene
+	initScene();
 
-	glutDisplayFunc(myDisplay);				// function to run when its time to draw something
-	glutReshapeFunc(myReshape);				// function to run when the window gets resized
-	glutIdleFunc(myDisplay);                // function to run when idle
+	glutDisplayFunc(myDisplay);
+	glutReshapeFunc(myReshape);
+	glutIdleFunc(myDisplay);
 
 	glutKeyboardFunc(keyPressed);
 	glutSpecialFunc(keySpecial);

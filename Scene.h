@@ -1,8 +1,3 @@
-//
-//  Scene.h
-//  AS3
-//
-
 #ifndef __AS3__Scene__
 #define __AS3__Scene__
 
@@ -26,12 +21,13 @@ public:
 	glm::vec3 camera_look;
 	glm::vec3 camera_up;
 
-	//stuff for an orthographic scene.
+	//stuff for projection
 	float left,right,bottom,top,z_near,z_far;
-	float diameter; //for bounding sphere
-	glm::vec3 center;
+	float diameter; //diameter of bounding sphere
+	glm::vec3 center; //center of bounding sphere
     
-    float step;
+    float step; //step size to use for uniform tessellation
+	float tolerance; //tolerance to use for adaptive tessellation
     
     Scene(void);
     void add_patch(BezierPatch);
