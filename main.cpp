@@ -539,6 +539,7 @@ int main(int argc, char* argv[]){
 
 			// fill first position for proper vertex numbering
 			vert_list.push_back(glm::vec3(0,0,0));
+            norm_list.push_back(glm::vec3(0,0,0));
 
 			while(inpfile.good()) {
 				vector<string> splitline;
@@ -796,6 +797,8 @@ int main(int argc, char* argv[]){
 		cout<<"Total number of triangles to render: "<<scene.number_of_triangles<<'\n'<<endl;
 	}
 
+    scene.set_camera_pos();
+    
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);

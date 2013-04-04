@@ -36,7 +36,6 @@ void Scene::subdivide_patch(bool use_adaptive) {
 		}
 	}
 	set_min_max();
-	set_camera_pos();
 }
 
 void Scene::set_min_max() {
