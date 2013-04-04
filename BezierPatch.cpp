@@ -71,6 +71,9 @@ LocalGeo BezierPatch::patch_interp(float u, float v){
 /******************************
 * Uniform Subdivision Methods *
 ******************************/
+/*
+This method comes from the Lecture 12 - Surfaces pseudocode by James O'Brien.
+*/
 void BezierPatch::uniform_subdivide(float step){
 	float epsilon = 0.001f;
 	float numdiv = ((1 + epsilon) / step);
@@ -214,6 +217,9 @@ void BezierPatch::adaptive_subdivide(float tol){
 			bc_split = true;
 		}
 
+		//We have checked all sides of triangle. Now we need to add triangle to final list
+		//or split and add the split triangles into the queue. These 8 splits cases come from
+		//Lecture 12 - Surfaces, pg. 29 in James O'Brien's lecture notes.
 		if (!ab_split){
 			if(!ac_split){
 				if(!bc_split){
