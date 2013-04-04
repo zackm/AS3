@@ -76,7 +76,9 @@ void reset_shading_mode(){
 /*
 When shading the model using curvature, this helper method is called to make a vertex,
 and normal and color the vertex accordingly. The color of the vertex is blue if the
-curvature is positive, red if it is negative, and black if it is 0.
+curvature is positive, red if it is negative, and black if it is 0. Since curvature 
+takes values in the range -inf to inf, we map to the range -1 to 1 by the function
+(2/PI) * atan(curvature) in order to color.
 */
 void curvature_shading(float curvature,glm::vec3 point, glm::vec3 vector){
 	float red,blue;

@@ -121,6 +121,8 @@ void BezierPatch::adaptive_subdivide(float tol){
 	*/
 
 	LocalGeo current_geo;
+	const int max_iterations = 5;
+	int iterations_left;
 
 	for (int i = 0; i<=1; i++){
 		for (int j = 0; j<=1; j++){
@@ -132,8 +134,8 @@ void BezierPatch::adaptive_subdivide(float tol){
 	//two triangles, so just make queue manually. We insert
 	//a triangle into list once it meets the tolerance requirement
 
-	Triangle tri1(geo_list[0],geo_list[2],geo_list[1]);
-	Triangle tri2(geo_list[1],geo_list[2],geo_list[3]);
+	Triangle tri1(geo_list[0],geo_list[2],geo_list[1],max_iterations);
+	Triangle tri2(geo_list[1],geo_list[2],geo_list[3],max_iterations);
 
 	tri_queue.push(tri1);
 	tri_queue.push(tri2);
@@ -152,11 +154,12 @@ void BezierPatch::adaptive_subdivide(float tol){
 		//pop tri. Test it. Either, add to tri list, or subdivide and add to queue.
 		Triangle current_tri = tri_queue.front();
 		tri_queue.pop();
+		iterations_left = current_tri.divisions_remaining;
 
 		//check split on a to b
 		a = current_tri.a;
 		b = current_tri.b;
-
+		
 		uv_value = .5f*(a.param_value+b.param_value); //interpolate param value
 		ab_midpoint = a.point+(.5f*(b.point-a.point));
 		ab_geo = patch_interp(uv_value[0],uv_value[1]);
@@ -164,7 +167,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 		difference = ab_geo.point - ab_midpoint;
 		distance = glm::sqrt(glm::dot(difference,difference));
 
-		if (distance>=tol){
+		if (distance>=tol && iterations_left>0){
 			//then we need to split along a,b.
 			ab_split = true;
 		}
@@ -180,7 +183,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 		difference = ac_geo.point - ac_midpoint;
 		distance = glm::sqrt(glm::dot(difference,difference));
 
-		if (distance>=tol){
+		if (distance>=tol && iterations_left>0){
 			//then we need to split along a,c.
 			ac_split = true;
 		}
@@ -196,7 +199,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 		difference = bc_geo.point - bc_midpoint;
 		distance = glm::sqrt(glm::dot(difference,difference));
 
-		if (distance>=tol){
+		if (distance>=tol && iterations_left>0){
 			//then we need to split along b,c.
 			bc_split = true;
 		}
@@ -209,8 +212,8 @@ void BezierPatch::adaptive_subdivide(float tol){
 				}else{
 					add_geo(bc_geo);
 					//split along bc.
-					Triangle tri1(bc_geo,b,a);
-					Triangle tri2(bc_geo,a,c);
+					Triangle tri1(bc_geo,b,a,iterations_left-1);
+					Triangle tri2(bc_geo,a,c,iterations_left-1);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
@@ -220,17 +223,17 @@ void BezierPatch::adaptive_subdivide(float tol){
 				add_geo(ac_geo);
 				if(!bc_split){
 					//split along ac
-					Triangle tri1(ac_geo,b,a);
-					Triangle tri2(ac_geo,c,b);
+					Triangle tri1(ac_geo,b,a,iterations_left-1);
+					Triangle tri2(ac_geo,c,b,iterations_left-1);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
 				}else{
 					add_geo(bc_geo);
 					//need to split ac and bc
-					Triangle tri1(bc_geo,b,a);
-					Triangle tri2(bc_geo,a,ac_geo);
-					Triangle tri3(ac_geo,c,bc_geo);
+					Triangle tri1(bc_geo,b,a,iterations_left-1);
+					Triangle tri2(bc_geo,a,ac_geo,iterations_left-1);
+					Triangle tri3(ac_geo,c,bc_geo,iterations_left-1);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
@@ -242,17 +245,17 @@ void BezierPatch::adaptive_subdivide(float tol){
 			if(!ac_split){
 				if(!bc_split){
 					//split along ab
-					Triangle tri1(ab_geo,c,b);
-					Triangle tri2(ab_geo,a,c);
+					Triangle tri1(ab_geo,c,b,iterations_left-1);
+					Triangle tri2(ab_geo,a,c,iterations_left-1);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
 				}else{
 					add_geo(bc_geo);
 					//need to split on ab and on bc
-					Triangle tri1(ab_geo,a,c);
-					Triangle tri2(ab_geo,c,bc_geo);
-					Triangle tri3(ab_geo,bc_geo,b);
+					Triangle tri1(ab_geo,a,c,iterations_left-1);
+					Triangle tri2(ab_geo,c,bc_geo,iterations_left-1);
+					Triangle tri3(ab_geo,bc_geo,b,iterations_left-1);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
@@ -262,9 +265,9 @@ void BezierPatch::adaptive_subdivide(float tol){
 				add_geo(ac_geo);
 				if(!bc_split){
 					//need to split on ab and ac
-					Triangle tri1(ac_geo,c,b);
-					Triangle tri2(ab_geo,ac_geo,b);
-					Triangle tri3(ab_geo,a,ac_geo);
+					Triangle tri1(ac_geo,c,b,iterations_left-1);
+					Triangle tri2(ab_geo,ac_geo,b,iterations_left-1);
+					Triangle tri3(ab_geo,a,ac_geo,iterations_left-1);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
@@ -272,10 +275,10 @@ void BezierPatch::adaptive_subdivide(float tol){
 				}else{
 					add_geo(bc_geo);
 					//need to split on all of them. Produces four triangles
-					Triangle tri1(a,ac_geo,ab_geo);
-					Triangle tri2(b,ab_geo,bc_geo);
-					Triangle tri3(c,bc_geo,ac_geo);
-					Triangle tri4(ab_geo,ac_geo,bc_geo);
+					Triangle tri1(a,ac_geo,ab_geo,iterations_left-1);
+					Triangle tri2(b,ab_geo,bc_geo,iterations_left-1);
+					Triangle tri3(c,bc_geo,ac_geo,iterations_left-1);
+					Triangle tri4(ab_geo,ac_geo,bc_geo,iterations_left-1);
 
 					tri_queue.push(tri1);
 					tri_queue.push(tri2);
