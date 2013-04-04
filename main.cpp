@@ -58,7 +58,7 @@ float VERTICAL_ROT = 0; //Vertically.
 bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determine type of shading.
 	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON;
 bool OBJ_ON; // If an obj file is given as input.
-bool OBJ_NORM; // If vertex normals exist in obj file.
+bool OBJ_NORM = true; // If vertex normals exist in obj file.
 vector<Triangle> tri_vec; // Vector of triangles from obj file;
 
 int COLOR_NUM = 0; // Counter to toggle between colors
@@ -138,6 +138,10 @@ void initScene(){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
+    
+    if (!OBJ_NORM) {
+        WIREFRAME_ON = true;
+    }
 }
 
 /* 

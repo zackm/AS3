@@ -1,0 +1,34 @@
+CS184 AS3
+Spring 2013
+
+Tyler Brabham cs184-ej
+Zack Mayeda cs184-bg
+
+Our code runs on Unix (specifically, the hive instructional machines).
+
+Zack submitted the source code.
+
+Notes:
+- We use a max recursion depth of 5 for adaptive subdivision.
+- We referenced the pseudocode for uniform subdivision from the Lecture 12 Slides, page 29.
+- We referenced the splitting cases for adaptive subdivision from the Lecture 12 Slides, page 29.
+- We hand wrote the shape.bez file.
+- We used blender (open source 3D modeling software) to create the monkey.obj file.
+
+Extra Features:
+
+===== OBJ Input
+When .obj files are passed as the only argument to the program, the model is created. Our program parses the following OBJ commands: v, vn, f
+It only assembles triangles.
+
+===== Curvature
+- pressing 'g' turns on gaussian curvature
+- pressing 'm' turns on mean curvature
+- pressing '1' toggles max curvature
+- pressing '2' toggles min curvature
+
+===== Color
+- pressing 'c' rotates the diffuse and specular costants between preset colors
+
+===== Video
+Link on website
