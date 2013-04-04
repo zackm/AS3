@@ -61,6 +61,9 @@ bool OBJ_ON; // If an obj file is given as input.
 bool OBJ_NORM; // If vertex normals exist in obj file.
 vector<Triangle> tri_vec; // Vector of triangles from obj file;
 
+int COLOR_NUM = 0; // Counter to toggle between colors
+vector<glm::vec3> COLOR_ARRAY; // Array of color constants
+
 /*
 When toggling between shading modes, this method is called to turn all shading modes off.
 Then we can turn on only the single shading mode we want.
@@ -103,6 +106,13 @@ Default the scene to a single light with constant BRDF coefficients.
 Default to smooth shading using the light with orthographic projection
 */
 void initScene(){
+    COLOR_ARRAY.push_back( glm::vec3( 0.5f, 0.0f, 0.7f ));
+    COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.7, 0.7 ));
+    COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.5, 0.0 ));
+    COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.2, 0.9 ));
+    COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.9, 0.0 ));
+    COLOR_ARRAY.push_back( glm::vec3( 0.7, 0.7, 0.7 ));
+    
 	SMOOTH_SHADING_ON = true;
 	WIREFRAME_ON = false;
 	PROJ_ORTHO = false;
@@ -129,6 +139,20 @@ void initScene(){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
+}
+
+/* 
+ Change the diffuse, specular, and ambient terms. Rotates between preset colors.
+ */
+void change_color(){
+    glClearColor (0.0, 0.0, 0.0, 0.0);
+    glm::vec3 col = COLOR_ARRAY[COLOR_NUM];
+    GLfloat mat_specular[] = { col.x, col.y, col.z, 1.0 };
+	GLfloat mat_diffuse[] = { col.x, col.y, col.z, 1.0 };
+	GLfloat mat_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
 }
 
 /*
@@ -220,6 +244,11 @@ void keyPressed(unsigned char key, int x, int y) {
 		}
 
 		break;
+    case 'c':
+        COLOR_NUM += 1;
+        COLOR_NUM = COLOR_NUM % COLOR_ARRAY.size();
+        change_color();
+        break;
 	}
 }
 
