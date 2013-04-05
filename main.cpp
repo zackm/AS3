@@ -108,7 +108,8 @@ Default the scene to a single light with constant BRDF coefficients.
 Default to smooth shading using the light with perspective projection.
 */
 void initScene(){
-	COLOR_ARRAY.push_back( glm::vec3( 0.5f, 0.0f, 0.7f ));
+    // Hard code various diffuse and specular constants
+	COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.0, 0.7 ));
 	COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.7, 0.7 ));
 	COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.5, 0.0 ));
 	COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.2, 0.9 ));
@@ -122,7 +123,8 @@ void initScene(){
 	MAX_CURVATURE_ON = false;
 	MIN_CURVATURE_ON = false;
 	HIDDEN_LINE_ON = false;
-
+    
+    // Add light and specify material properties
 	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
@@ -398,9 +400,10 @@ void myDisplay() {
 	glRotatef(HORIZONTAL_ROT,1,0,0); //horizontal rotate
 	glRotatef(VERTICAL_ROT,0,1,0);//vertical rotate
 
-	// Polygon drawing for obj files
+	// Polygon drawing for OBJ files
 	if (OBJ_ON) {
 		Triangle tri;
+        // Draw each triangle specified by the OBJ file
 		for (int i = 0; i < tri_vec.size(); i++) {
 			tri = tri_vec[i];
 			LocalGeo a,b,c;
@@ -643,7 +646,7 @@ int main(int argc, char* argv[]){
 			vector<glm::vec3> vert_list;
 			vector<glm::vec3> norm_list;
 
-			// fill first position for proper vertex numbering
+			// fill first position for proper numbering
 			vert_list.push_back(glm::vec3(0,0,0));
 			norm_list.push_back(glm::vec3(0,0,0));
 
@@ -660,11 +663,9 @@ int main(int argc, char* argv[]){
 					// ignore blank lines
 					continue;
 				}
-
 				else if(!splitline[0].compare("#")){
 					// ignore comments
 					continue;
-
 				}
 				else if(!splitline[0].compare("s")){
 					// ignore s commands
@@ -769,6 +770,7 @@ int main(int argc, char* argv[]){
 					LocalGeo a_geo(a,a_norm);
 					LocalGeo b_geo(b,b_norm);
 					LocalGeo c_geo(c,c_norm);
+                    // Create triangle and add to list
 					tri_vec.push_back(Triangle(a_geo,b_geo,c_geo));
 				}
 
@@ -801,7 +803,7 @@ int main(int argc, char* argv[]){
 				y_max = glm::max(y_max,p.y);
 				z_max = glm::max(z_max,p.z);
 			}
-
+            // Pass min and max values to scene
 			scene.max.x = x_max;
 			scene.max.y = y_max;
 			scene.max.z = z_max;
@@ -859,8 +861,8 @@ int main(int argc, char* argv[]){
 				while (ss >> buf) {
 					splitline.push_back(buf);
 				}
+                
 				//blank lines, increment patch number
-
 				if(splitline.size() == 0) {
 					current_patch++;
 				}
