@@ -653,8 +653,8 @@ int main(int argc, char* argv[]){
 			// fill first position for proper vertex numbering
 			vert_list.push_back(glm::vec3(0,0,0));
 			norm_list.push_back(glm::vec3(0,0,0));
-			vector<Triangle*> filler_tri;
-			connected_triangles.push_back(filler_tri);
+			//vector<Triangle*> filler_tri;
+			//connected_triangles.push_back(filler_tri);
 
 			while(inpfile.good()) {
 				vector<string> splitline;
@@ -845,7 +845,8 @@ int main(int argc, char* argv[]){
 			float curvature, numerator, denom;
 
 			for (int i = 0; i<connected_triangles.size(); i++){
-				float curvature = numerator = denom = 0.0;
+				float curvature = numerator = 0.0;
+				denom = 0.0f;
 				shared_triangles = connected_triangles[i];
 
 				//first loop is to add up all contributing curvatures
@@ -855,7 +856,11 @@ int main(int argc, char* argv[]){
 					denom += (*temp_tri).area;
 				}
 
-				curvature = numerator/denom;
+				if(denom>0.0f){
+					curvature = numerator/denom;
+				}else{
+					curvature = numeric_limits<int>::max();
+				}
 
 				LocalGeo* temp_geo;
 				//second loop is to set the correct local geo's curvature value.

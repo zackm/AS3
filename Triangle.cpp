@@ -59,14 +59,15 @@ void Triangle::set_areas(){
 
 	//Now from normals (ie points on gauss sphere), calculate the triangle area
 	float a_temp,b_temp,c_temp,alpha,beta,gamma;
-	a_temp = glm::acos(glm::sqrt(glm::dot(b.normal,c.normal)));
-	b_temp = glm::acos(glm::sqrt(glm::dot(a.normal,c.normal)));
-	c_temp = glm::acos(glm::sqrt(glm::dot(b.normal,a.normal)));
+	a_temp = glm::acos(glm::dot(b.normal,c.normal));
+	b_temp = glm::acos(glm::dot(a.normal,c.normal));
+	c_temp = glm::acos(glm::dot(b.normal,a.normal));
 	
 	//exit if values lead to infinities
 	if(glm::sin(a_temp)==0.0f || glm::sin(b_temp)==0.0f|| glm::sin(c_temp)==0.0f){
 		return;
 	}
+
 
 	//Law of cosines on the sphere
 	alpha = glm::acos((glm::cos(a_temp)-(glm::cos(b_temp)*glm::cos(c_temp)))/(glm::sin(b_temp)*glm::sin(c_temp)));
@@ -74,7 +75,6 @@ void Triangle::set_areas(){
 	gamma = glm::acos((glm::cos(c_temp)-(glm::cos(b_temp)*glm::cos(a_temp)))/(glm::sin(b_temp)*glm::sin(a_temp)));
 
 	//This follows from Gauss-Bonnet formula if we assume triangles on sphere are geodesic triangles.
-	cout<<alpha<<','<<beta<<','<<gamma<<endl;
 	sphere_area = alpha+beta+gamma-PI;
 }
 
