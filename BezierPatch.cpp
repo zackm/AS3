@@ -160,6 +160,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 
 	glm::vec3 difference;
 	float distance;
+
 	while (!tri_queue.empty()){
 		//pop tri. Test it. Either, add to tri list, or subdivide and add to queue.
 		Triangle current_tri = tri_queue.front();

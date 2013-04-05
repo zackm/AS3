@@ -56,9 +56,10 @@ float HORIZONTAL_ROT = 0; //The amount to rotate the object by horizontally (in 
 float VERTICAL_ROT = 0; //Vertically.
 
 bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determine type of shading.
-	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON;
-bool OBJ_ON; // If an obj file is given as input.
+	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON, HIDDEN_LINE_ON;
+bool OBJ_ON = false;; // If an obj file is given as input.
 bool OBJ_NORM = true; // If vertex normals exist in obj file.
+
 vector<Triangle> tri_vec; // Vector of triangles from obj file;
 
 int COLOR_NUM = 0; // Counter to toggle between colors
@@ -74,6 +75,7 @@ void reset_shading_mode(){
 	MEAN_CURVATURE_ON = false;
 	MAX_CURVATURE_ON = false;
 	MIN_CURVATURE_ON = false;
+	HIDDEN_LINE_ON = false;
 }
 
 /*
@@ -119,6 +121,7 @@ void initScene(){
 	MEAN_CURVATURE_ON = false;
 	MAX_CURVATURE_ON = false;
 	MIN_CURVATURE_ON = false;
+	HIDDEN_LINE_ON = false;
 
 	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -170,8 +173,10 @@ void keyPressed(unsigned char key, int x, int y) {
 
 		break;
 	case 's':
-		//toggle between flat and smooth
-		SMOOTH_SHADING_ON = !SMOOTH_SHADING_ON;
+		//toggle between flat and smooth, provided we aren't in wireframe mode.
+		if(!WIREFRAME_ON){
+			SMOOTH_SHADING_ON = !SMOOTH_SHADING_ON;
+		}
 
 		break;
 	case 'w':
@@ -186,41 +191,49 @@ void keyPressed(unsigned char key, int x, int y) {
 		break;
 	case 'g':
 		//toggle between gauss and mean curvature. Only one can be on at a time.
-		if(GAUSS_CURVATURE_ON){
-			reset_shading_mode();
-		}else{
-			reset_shading_mode();
-			GAUSS_CURVATURE_ON = true;
+		if(!OBJ_ON){
+			if(GAUSS_CURVATURE_ON){
+				reset_shading_mode();
+			}else{
+				reset_shading_mode();
+				GAUSS_CURVATURE_ON = true;
+			}
 		}
 
 		break;
 	case 'm':
 		//hold down h to see mean curvature (not a toggle switch)
-		if(MEAN_CURVATURE_ON){
-			reset_shading_mode();
-		}else{
-			reset_shading_mode();
-			MEAN_CURVATURE_ON = true;
+		if(!OBJ_ON){
+			if(MEAN_CURVATURE_ON){
+				reset_shading_mode();
+			}else{
+				reset_shading_mode();
+				MEAN_CURVATURE_ON = true;
+			}
 		}
 
 		break;
 	case '1':
 		//toggle max curvature on
-		if(MAX_CURVATURE_ON){
-			reset_shading_mode();
-		}else{
-			reset_shading_mode();
-			MAX_CURVATURE_ON = true;
+		if(!OBJ_ON){
+			if(MAX_CURVATURE_ON){
+				reset_shading_mode();
+			}else{
+				reset_shading_mode();
+				MAX_CURVATURE_ON = true;
+			}
 		}
 
 		break;
 	case '2':
 		//toggle min curvature on
-		if(MIN_CURVATURE_ON){
-			reset_shading_mode();
-		}else{
-			reset_shading_mode();
-			MIN_CURVATURE_ON = true;
+		if(!OBJ_ON){
+			if(MIN_CURVATURE_ON){
+				reset_shading_mode();
+			}else{
+				reset_shading_mode();
+				MIN_CURVATURE_ON = true;
+			}
 		}
 
 		break;
@@ -243,9 +256,36 @@ void keyPressed(unsigned char key, int x, int y) {
 
 		break;
 	case 'c':
+		//cycle through colors.
 		COLOR_NUM += 1;
 		COLOR_NUM = COLOR_NUM % COLOR_ARRAY.size();
 		change_color();
+		break;
+	case 'h':
+		//remove hidden lines for wireframes, provided wireframe is on. Else, do nothing.
+		if(OBJ_ON){
+			if(WIREFRAME_ON){
+				if (HIDDEN_LINE_ON){
+					reset_shading_mode();
+				}else{
+					reset_shading_mode();
+					HIDDEN_LINE_ON = true;
+				}
+				WIREFRAME_ON = true;
+			}
+			OBJ_ON = true;
+		}else{
+			if(WIREFRAME_ON){
+				if (HIDDEN_LINE_ON){
+					reset_shading_mode();
+				}else{
+					reset_shading_mode();
+					HIDDEN_LINE_ON = true;
+				}
+				WIREFRAME_ON = true;
+			}
+			OBJ_ON = false;
+		}
 		break;
 	}
 }
@@ -368,25 +408,51 @@ void myDisplay() {
 			b = tri.b;
 			c = tri.c;
 			if (WIREFRAME_ON){
-				glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
-				glPolygonMode(GL_BACK, GL_LINE);
+				if(HIDDEN_LINE_ON){
+					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-				glDisable(GL_LIGHTING);
-				glClearColor (0.0, 0.0, 0.0, 0.0);
-				glColor3f(1.0f,1.0f,1.0f);
+					glDisable(GL_LIGHTING);
+					glClearColor(0.0,0.0,0.0,0.0);
+					glColor3f(1.0f,1.0f,1.0f);//color as white for wireframe
 
-				glBegin(GL_POLYGON);
+					glBegin(GL_POLYGON);
+					glVertex3f(a.point[0],a.point[1],a.point[2]);
+					glVertex3f(b.point[0],b.point[1],b.point[2]);
+					glVertex3f(c.point[0],c.point[1],c.point[2]);
+					glEnd();
 
-				if (OBJ_NORM) { glNormal3f(a.normal[0],a.normal[1],a.normal[2]); }
-				glVertex3f(a.point[0],a.point[1],a.point[2]);
-				if (OBJ_NORM) { glNormal3f(b.normal[0],b.normal[1],b.normal[2]); }
-				glVertex3f(b.point[0],b.point[1],b.point[2]);
-				if (OBJ_NORM) { glNormal3f(c.normal[0],c.normal[1],c.normal[2]); }
-				glVertex3f(c.point[0],c.point[1],c.point[2]);
-				glEnd();
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);//color as background color.
+					glEnable(GL_POLYGON_OFFSET_FILL);
+					glPolygonOffset(1.0,1.0);
+					glClearColor(0.0,0.0,0.0,0.0);
+					glColor3f(0.0,0.0,0.0);
 
-				glPolygonMode(GL_FRONT, GL_FILL); // fill mode
-				glPolygonMode(GL_BACK, GL_FILL);
+					glBegin(GL_POLYGON);//draw background (black) colored object
+					glVertex3f(a.point[0],a.point[1],a.point[2]);
+					glVertex3f(b.point[0],b.point[1],b.point[2]);
+					glVertex3f(c.point[0],c.point[1],c.point[2]);
+					glEnd();
+
+					glDisable(GL_POLYGON_OFFSET_FILL);
+				}else{
+
+					glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
+					glPolygonMode(GL_BACK, GL_LINE);
+
+					glDisable(GL_LIGHTING);
+					glClearColor (0.0, 0.0, 0.0, 0.0);
+					glColor3f(1.0f,1.0f,1.0f);
+
+					glBegin(GL_POLYGON);
+
+					glVertex3f(a.point[0],a.point[1],a.point[2]);
+					glVertex3f(b.point[0],b.point[1],b.point[2]);
+					glVertex3f(c.point[0],c.point[1],c.point[2]);
+					glEnd();
+
+					glPolygonMode(GL_FRONT, GL_FILL); // fill mode
+					glPolygonMode(GL_BACK, GL_FILL);
+				}
 			} else{
 				glClearColor (0.0, 0.0, 0.0, 0.0);
 
@@ -418,25 +484,61 @@ void myDisplay() {
 				c = tri.c;
 
 				if (WIREFRAME_ON){
-					glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
-					glPolygonMode(GL_BACK, GL_LINE);
+					if(HIDDEN_LINE_ON){
+						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-					glDisable(GL_LIGHTING);
-					glClearColor (0.0, 0.0, 0.0, 0.0);
-					glColor3f(1.0f,1.0f,1.0f);
+						glDisable(GL_LIGHTING);
+						glClearColor(0.0,0.0,0.0,0.0);
+						glColor3f(1.0f,1.0f,1.0f);//color as white for wireframe
 
-					glBegin(GL_POLYGON);
+						glBegin(GL_POLYGON);//draw wireframe
+						glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+						glVertex3f(a.point[0],a.point[1],a.point[2]);
+						glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+						glVertex3f(b.point[0],b.point[1],b.point[2]);
+						glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+						glVertex3f(c.point[0],c.point[1],c.point[2]);
+						glEnd();
 
-					glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
-					glVertex3f(a.point[0],a.point[1],a.point[2]);
-					glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
-					glVertex3f(b.point[0],b.point[1],b.point[2]);
-					glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
-					glVertex3f(c.point[0],c.point[1],c.point[2]);
-					glEnd();
+						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);//color as background color.
+						glEnable(GL_POLYGON_OFFSET_FILL);
+						glPolygonOffset(1.0,1.0);
+						glClearColor(0.0,0.0,0.0,0.0);
+						glColor3f(0.0,0.0,0.0);
 
-					glPolygonMode(GL_FRONT, GL_FILL); // fill mode
-					glPolygonMode(GL_BACK, GL_FILL);
+						glBegin(GL_POLYGON);//draw background (black) colored object
+						glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+						glVertex3f(a.point[0],a.point[1],a.point[2]);
+						glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+						glVertex3f(b.point[0],b.point[1],b.point[2]);
+						glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+						glVertex3f(c.point[0],c.point[1],c.point[2]);
+						glEnd();
+
+						glDisable(GL_POLYGON_OFFSET_FILL);
+
+					}else{
+						glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
+						glPolygonMode(GL_BACK, GL_LINE);
+
+						glDisable(GL_LIGHTING);
+						glClearColor (0.0, 0.0, 0.0, 0.0);
+						glColor3f(1.0f,1.0f,1.0f);
+
+						glBegin(GL_POLYGON);
+
+						glNormal3f(a.normal[0],a.normal[1],a.normal[2]);
+						glVertex3f(a.point[0],a.point[1],a.point[2]);
+						glNormal3f(b.normal[0],b.normal[1],b.normal[2]);
+						glVertex3f(b.point[0],b.point[1],b.point[2]);
+						glNormal3f(c.normal[0],c.normal[1],c.normal[2]);
+						glVertex3f(c.point[0],c.point[1],c.point[2]);
+						glEnd();
+
+						glPolygonMode(GL_FRONT, GL_FILL); // fill mode
+						glPolygonMode(GL_BACK, GL_FILL);
+
+					}
 				}else if(GAUSS_CURVATURE_ON){
 					glDisable(GL_LIGHTING);
 
@@ -543,7 +645,7 @@ int main(int argc, char* argv[]){
 
 			// fill first position for proper vertex numbering
 			vert_list.push_back(glm::vec3(0,0,0));
-            norm_list.push_back(glm::vec3(0,0,0));
+			norm_list.push_back(glm::vec3(0,0,0));
 
 			while(inpfile.good()) {
 				vector<string> splitline;
@@ -801,8 +903,8 @@ int main(int argc, char* argv[]){
 		cout<<"Total number of triangles to render: "<<scene.number_of_triangles<<'\n'<<endl;
 	}
 
-    scene.set_camera_pos();
-    
+	scene.set_camera_pos();
+
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
