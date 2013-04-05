@@ -66,8 +66,8 @@ bool OBJ_NORM = true; // If vertex normals exist in obj file.
 vector<Triangle*> tri_vec; //Vector of triangles from obj file;
 
 vector<vector<Triangle*> > connected_triangles; /*for index i, we have a list of all triangles that use vertex i.
-This vector is used to figure out which triangles share a particular point. We need this to get an apprxomation
-of the gaussian curvature.*/
+												This vector is used to figure out which triangles share a particular point. We need this to get an apprxomation
+												of the gaussian curvature.*/
 
 int COLOR_NUM = 0; // Counter to cycle between colors
 vector<glm::vec3> COLOR_ARRAY; // Array of color constants
@@ -117,7 +117,7 @@ Default the scene to a single light with constant BRDF coefficients.
 Default to smooth shading using the light with perspective projection.
 */
 void initScene(){
-    // Hard code various diffuse and specular constants
+	// Hard code various diffuse and specular constants
 	COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.0, 0.7 ));
 	COLOR_ARRAY.push_back( glm::vec3( 0.0, 0.7, 0.7 ));
 	COLOR_ARRAY.push_back( glm::vec3( 0.5, 0.5, 0.0 ));
@@ -132,8 +132,8 @@ void initScene(){
 	MAX_CURVATURE_ON = false;
 	MIN_CURVATURE_ON = false;
 	HIDDEN_LINE_ON = false;
-    
-    // Add light and specify material properties
+
+	// Add light and specify material properties
 	GLfloat light_position[] = { -1.0, -1.0, -1.0, 0.0 };
 	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat mat_diffuse[] = { 0.5, 0.0, 0.7, 1.0 };
@@ -152,10 +152,10 @@ void initScene(){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
-    
-    if (!OBJ_NORM) {
-        WIREFRAME_ON = true;
-    }
+
+	if (!OBJ_NORM) {
+		WIREFRAME_ON = true;
+	}
 }
 
 /* 
@@ -379,8 +379,14 @@ void myReshape(int w, int h) {
 	gluPerspective(FOV*ZOOM_FACTOR,aspect_ratio,scene.z_near,scene.z_far);
 }
 
+/*
+Most of the rendering work done here. This method renders the scene using whichever
+render mode is turned on (shading normally, wireframe, hidden line, curvature shading).
+It also shades differently if OBJ_ON is true or false; ie, if we are rendering an .obj
+file or a .bez file.
+*/
 void myDisplay() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);				// clear the color buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	int w = viewport.w;
 	int h = viewport.h;
@@ -425,6 +431,9 @@ void myDisplay() {
 
 			if (WIREFRAME_ON){
 				if(HIDDEN_LINE_ON){
+					/*renders object twice as white and black with an offset. The offset removes some 
+					artifacts from lines behind object.
+					*/
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 					glDisable(GL_LIGHTING);
@@ -451,8 +460,8 @@ void myDisplay() {
 
 					glDisable(GL_POLYGON_OFFSET_FILL);
 				}else{
-
-					glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
+					//Just normal wirefram mode, without removing hidden lines.
+					glPolygonMode(GL_FRONT, GL_LINE);
 					glPolygonMode(GL_BACK, GL_LINE);
 
 					glDisable(GL_LIGHTING);
@@ -470,6 +479,7 @@ void myDisplay() {
 					glPolygonMode(GL_BACK, GL_FILL);
 				}
 			}else if(GAUSS_CURVATURE_ON && OBJ_NORM){
+				//Colors according the gaussian curvature at each vertex.
 				glDisable(GL_LIGHTING);
 
 				glBegin(GL_POLYGON);
@@ -480,6 +490,7 @@ void myDisplay() {
 
 				glEnd();
 			}else{
+				//Colors using typical shading and lights.
 				glClearColor (0.0, 0.0, 0.0, 0.0);
 
 				glEnable(GL_LIGHTING);
@@ -511,6 +522,9 @@ void myDisplay() {
 
 				if (WIREFRAME_ON){
 					if(HIDDEN_LINE_ON){
+						/*renders object twice as white and black with an offset. The offset removes some 
+						artifacts from lines behind object.
+						*/
 						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 						glDisable(GL_LIGHTING);
@@ -544,7 +558,8 @@ void myDisplay() {
 						glDisable(GL_POLYGON_OFFSET_FILL);
 
 					}else{
-						glPolygonMode(GL_FRONT, GL_LINE); // wireframe mode
+						//Usual wireframe mode
+						glPolygonMode(GL_FRONT, GL_LINE);
 						glPolygonMode(GL_BACK, GL_LINE);
 
 						glDisable(GL_LIGHTING);
@@ -565,6 +580,8 @@ void myDisplay() {
 						glPolygonMode(GL_BACK, GL_FILL);
 
 					}
+
+				//Color according to the various kinds of curvature.
 				}else if(GAUSS_CURVATURE_ON){
 					glDisable(GL_LIGHTING);
 
@@ -606,6 +623,7 @@ void myDisplay() {
 
 					glEnd();
 				}else{
+					//Do typicaly color and shading using the light
 					glClearColor (0.0, 0.0, 0.0, 0.0);
 					glEnable(GL_LIGHTING);
 
@@ -631,7 +649,7 @@ void myDisplay() {
 
 /*
 Helper method for obj file parsing. Finds the number of slashes in
-a face reference.
+a face reference. This is due to multiple standards for .obj file format.
 */
 int slash_count(string s) {
 	int count = 0;
@@ -841,7 +859,7 @@ int main(int argc, char* argv[]){
 				y_max = glm::max(y_max,p.y);
 				z_max = glm::max(z_max,p.z);
 			}
-            // Pass min and max values to scene
+			// Pass min and max values to scene
 			scene.max.x = x_max;
 			scene.max.y = y_max;
 			scene.max.z = z_max;
@@ -929,7 +947,7 @@ int main(int argc, char* argv[]){
 				while (ss >> buf) {
 					splitline.push_back(buf);
 				}
-                
+
 				//blank lines, increment patch number
 				if(splitline.size() == 0) {
 					current_patch++;
