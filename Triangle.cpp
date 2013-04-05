@@ -55,7 +55,7 @@ void Triangle::set_areas(){
 	glm::vec3 vec2 = c.point-a.point;
 
 	glm::vec3 cross_prod = glm::cross(vec1,vec2);
-	area = .5f*glm::sqrt(glm::dot(cross_prod,cross_prod)); //I think it's square root
+	area = .5f*glm::sqrt(glm::dot(cross_prod,cross_prod));
 
 	//Now from normals (ie points on gauss sphere), calculate the triangle area
 	float a_temp,b_temp,c_temp,alpha,beta,gamma;
@@ -68,7 +68,6 @@ void Triangle::set_areas(){
 		return;
 	}
 
-
 	//Law of cosines on the sphere
 	alpha = glm::acos((glm::cos(a_temp)-(glm::cos(b_temp)*glm::cos(c_temp)))/(glm::sin(b_temp)*glm::sin(c_temp)));
 	beta = glm::acos((glm::cos(b_temp)-(glm::cos(a_temp)*glm::cos(c_temp)))/(glm::sin(a_temp)*glm::sin(c_temp)));
@@ -76,16 +75,15 @@ void Triangle::set_areas(){
 
 	//This follows from Gauss-Bonnet formula if we assume triangles on sphere are geodesic triangles.
 	sphere_area = alpha+beta+gamma-PI;
-}
 
-//int main(char argc, char* argv[]){
-//	glm::vec3 v1(1,0,0);
-//	glm::vec3 v2(0,1,0);
-//	glm::vec3 v3(0,0,1);
-//	glm::vec3 v(0,0,0);
-//
-//	Triangle test_tri(LocalGeo(v1,v1),LocalGeo(v2,v2),LocalGeo(v3,v3));
-//	std::cout<<test_tri.sphere_area<<std::endl;
-//	std::cin.get();
-//	return 0;
-//}
+	////calculate augmented area with normals
+	//vec1 = b.point+b.normal-a.point-a.normal;
+	//vec2 = c.point+c.normal-a.point-a.normal;
+
+	//glm::vec3 cross_prod_augmented = glm::cross(vec1,vec2);
+	//float area_aug = .5f*glm::sqrt(glm::dot(cross_prod_augmented,cross_prod_augmented));
+
+	//if (area_aug>=area){
+	//	sphere_area = -sphere_area;
+	//}
+}

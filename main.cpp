@@ -659,8 +659,8 @@ int main(int argc, char* argv[]){
 			// fill first position for proper numbering
 			vert_list.push_back(glm::vec3(0,0,0));
 			norm_list.push_back(glm::vec3(0,0,0));
-			//vector<Triangle*> filler_tri;
-			//connected_triangles.push_back(filler_tri);
+			vector<Triangle*> filler_tri;
+			connected_triangles.push_back(filler_tri);
 
 			while(inpfile.good()) {
 				vector<string> splitline;
