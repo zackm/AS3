@@ -59,7 +59,7 @@ bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determi
 	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON, HIDDEN_LINE_ON;
 
 bool OBJ_ON = false;; // If an obj file is given as input.
-bool OBJ_NORM; // If vertex normals exist in obj file.
+bool OBJ_NORM = true; // If vertex normals exist in obj file.
 vector<Triangle*> tri_vec; // Vector of triangles from obj file;
 vector<vector<Triangle*>> connected_triangles; //for index i, we have a list of all triangles that use vertex i.
 
