@@ -13,7 +13,7 @@ Notes:
 - We referenced the pseudocode for uniform subdivision from the Lecture 12 Slides, page 29.
 - We referenced the splitting cases for adaptive subdivision from the Lecture 12 Slides, page 29.
 - We hand wrote the shape.bez file.
-- We used blender (open source 3D modeling software) to create the monkey.obj and sphere.obj.
+- We used blender (open source 3D modeling software) to create the monkey.obj and the sphere obj files.
 - We got the heart.obj and heart.bez files from the blender repository and an online resource (links on website).
 - Some code is borrowed from previous assignments. Specifcally, much of the OpenGL is from Assignment 0 and 1.
   The file parser is mostly copied from Assignment 2.
