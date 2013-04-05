@@ -13,7 +13,9 @@ Notes:
 - We referenced the pseudocode for uniform subdivision from the Lecture 12 Slides, page 29.
 - We referenced the splitting cases for adaptive subdivision from the Lecture 12 Slides, page 29.
 - We hand wrote the shape.bez file.
-- We used blender (open source 3D modeling software) to create the monkey.obj file.
+- We used blender (open source 3D modeling software) to create the monkey.obj and sphere.obj.
+- We got the heart.obj file from the blender repository (link on website).
+- we got the heart.bez file from (whereever zack got it).
 
 Extra Features:
 
@@ -22,10 +24,15 @@ When .obj files are passed as the only argument to the program, the model is cre
 It only assembles triangles.
 
 ===== Curvature
-- pressing 'g' turns on gaussian curvature
-- pressing 'm' turns on mean curvature
-- pressing '1' toggles max curvature
-- pressing '2' toggles min curvature
+For exact curvature when rendering .bez files
+	- pressing 'g' turns on gaussian curvature
+	- pressing 'm' turns on mean curvature
+	- pressing '1' toggles max curvature
+	- pressing '2' toggles min curvature
+
+For approximate curvature when rendering .obj files
+	- pressing 'g' turns on the unsigned gaussian curvature. This looks good on monkey.obj, heart.obj, sphere_small.obj, 
+	  sphere_large.obj, and torus.obj.
 
 ===== Color
 - pressing 'c' rotates the diffuse and specular costants between preset colors
@@ -34,4 +41,8 @@ It only assembles triangles.
 Link on website
 
 ===== Hidden Line Mode
-- pressing 'h' toggles hidden line mode
+- pressing 'h' toggles hidden line mode when in wireframe mode.
+
+
+
+
