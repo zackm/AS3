@@ -11,6 +11,7 @@ public:
 	int divisions_remaining; //divisions remaining only needed for adaptive tessellation.
 	float area; //usual area.
 	float sphere_area; //gauss sphere area of normals
+	LocalGeo* geo_at_index(int);
 
 	Triangle(LocalGeo,LocalGeo,LocalGeo);
 	Triangle(LocalGeo,LocalGeo,LocalGeo,int);

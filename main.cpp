@@ -87,6 +87,7 @@ takes values in the range -inf to inf, we map to the range -1 to 1 by the functi
 (2/PI) * atan(curvature) in order to color.
 */
 void curvature_shading(float curvature,glm::vec3 point, glm::vec3 vector){
+
 	float red,blue;
 	if (curvature>0.0f){
 		red = 0.0f;
@@ -652,6 +653,8 @@ int main(int argc, char* argv[]){
 			// fill first position for proper vertex numbering
 			vert_list.push_back(glm::vec3(0,0,0));
 			norm_list.push_back(glm::vec3(0,0,0));
+			vector<Triangle*> filler_tri;
+			connected_triangles.push_back(filler_tri);
 
 			while(inpfile.good()) {
 				vector<string> splitline;
@@ -786,7 +789,6 @@ int main(int argc, char* argv[]){
 					LocalGeo c_geo(c,c_norm);
 
 					Triangle* new_tri = new Triangle(a_geo,b_geo,c_geo,a_point,b_point,c_point);
-					//new_tri.a.gaussian_curvature = 1.0f;
 
 					//resize vector
 					float n = glm::max(a_point,glm::max(b_point,c_point));
@@ -840,49 +842,27 @@ int main(int argc, char* argv[]){
 			//each vertex. We will use the normals to get the approximation.
 			vector<Triangle*> shared_triangles;
 			Triangle* temp_tri;
-			float curvature = 0.0f;
+			float curvature, numerator, denom;
 
 			for (int i = 0; i<connected_triangles.size(); i++){
-				float curvature = 0.0f;
+				float curvature = numerator = denom = 0.0;
 				shared_triangles = connected_triangles[i];
+
+				//first loop is to add up all contributing curvatures
 				for (int j = 0; j<shared_triangles.size(); j++){
 					temp_tri = shared_triangles[j];
+					numerator += (*temp_tri).sphere_area;
+					denom += (*temp_tri).area;
+				}
 
-					//area of triangle of points divided by area of triangle formed from points+normal.
-					glm::vec3 vec_u = (*temp_tri).b.point - (*temp_tri).a.point;
-					glm::vec3 vec_v = (*temp_tri).c.point - (*temp_tri).a.point;
-					glm::vec3 cross_prod_points = glm::cross(vec_u,vec_v);
-					//cout<<cross_prod_points[0]<<','<<cross_prod_points[1]<<','<<cross_prod_points[2]<<endl;
-					float area_points = glm::dot(cross_prod_points,cross_prod_points);
-					
+				curvature = numerator/denom;
 
-					//vec_u = vec_u+(*temp_tri).b.normal-(*temp_tri).a.normal;
-					//vec_v = vec_v+(*temp_tri).c.normal-(*temp_tri).a.normal;
-					//glm::vec3 cross_prod_normals = glm::cross(vec_u,vec_v);
-
-					glm::vec3 vec_alpha,vec_beta,vec_gamma;
-					vec_alpha = (*temp_tri).b.normal-(*temp_tri).a.normal;
-					vec_beta = (*temp_tri).c.normal-(*temp_tri).a.normal;
-					vec_gamma = (*temp_tri).c.normal-(*temp_tri).b.normal;
-
-					float a,b,c,angle_1,angle_2,angle_3;
-
-					//using spherical law of cosines 
-					a = glm::acos(glm::dot((*temp_tri).b.normal,(*temp_tri).c.normal));
-					b = glm::acos(glm::dot((*temp_tri).a.normal,(*temp_tri).c.normal));
-					c = glm::acos(glm::dot((*temp_tri).b.normal,(*temp_tri).a.normal));
-
-					angle_1 = glm::acos(glm::cos(a)-(glm::cos(b)*glm::cos(c)))*PI/180.0f/(glm::sin(b)*glm::sin(c));
-					angle_2 = glm::acos(glm::cos(b)-(glm::cos(a)*glm::cos(c)))*PI/180.0f/(glm::sin(a)*glm::sin(c));
-					angle_3 = glm::acos(glm::cos(c)-(glm::cos(b)*glm::cos(a)))*PI/180.0f/(glm::sin(b)*glm::sin(a));
-
-					float sign_points = 0.0;
-					float area_normals = angle_1+angle_2+angle_3 - PI;
-					curvature = area_normals;///area_points;
-
-					(*temp_tri).a.gaussian_curvature = curvature;
-					(*temp_tri).b.gaussian_curvature = curvature;
-					(*temp_tri).c.gaussian_curvature = curvature;
+				LocalGeo* temp_geo;
+				//second loop is to set the correct local geo's curvature value.
+				for (int j = 0; j<shared_triangles.size(); j++){
+					temp_tri = shared_triangles[j];
+					temp_geo = (*temp_tri).geo_at_index(i);
+					(*temp_geo).gaussian_curvature = curvature;
 				}
 			}
 		}
