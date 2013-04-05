@@ -61,7 +61,7 @@ bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determi
 bool OBJ_ON = false;; // If an obj file is given as input.
 bool OBJ_NORM = true; // If vertex normals exist in obj file.
 vector<Triangle*> tri_vec; // Vector of triangles from obj file;
-vector<vector<Triangle*>> connected_triangles; //for index i, we have a list of all triangles that use vertex i.
+vector<vector<Triangle*> > connected_triangles; //for index i, we have a list of all triangles that use vertex i.
 
 int COLOR_NUM = 0; // Counter to toggle between colors
 vector<glm::vec3> COLOR_ARRAY; // Array of color constants
