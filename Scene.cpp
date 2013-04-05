@@ -12,10 +12,18 @@ Scene::Scene(){
 	tolerance = step = 0.0f;
 }
 
+/*
+Adds BezierPatch current_patch to the end of the patch list stored in Scene.
+*/
 void Scene::add_patch(BezierPatch current_patch) {
 	patch_list.push_back(current_patch);
 }
 
+/*
+Subdivides all patches in patch list. If use_adaptive if true, then we 
+call a adaptive subdivision method in BezierPatch. Else, we call uniform
+subdivision.
+*/
 void Scene::subdivide_patch(bool use_adaptive) {
 	float tolerance = step;
 	int n = patch_list.size();
@@ -38,6 +46,11 @@ void Scene::subdivide_patch(bool use_adaptive) {
 	set_min_max();
 }
 
+/*
+This method is called after the list of all LocalGeo objects have been made
+by subdivide_patch. It sets the boudning box of the scene by calculating the max and min values
+in the x, y, and z directions.
+*/
 void Scene::set_min_max() {
 	float x_min,y_min,z_min,x_max,y_max,z_max;
 
@@ -66,6 +79,10 @@ void Scene::set_min_max() {
 	min.z = z_min;
 }
 
+/*
+Called after min and max have been set. It sets the camera using
+a bounding sphere about the object in the scene. 
+*/
 void Scene::set_camera_pos(){
 	diameter = glm::max(glm::max(max.x-min.x,max.z-min.z),max.y-min.y);
 

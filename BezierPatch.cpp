@@ -12,22 +12,22 @@ void BezierPatch::add_geo(LocalGeo geo){
 	geo_list.push_back(geo);
 }
 
+/*
+We interpolate the patch at the input (u,v). The patch is defined in terms of bernstein polynomials
+We have the patch:
+
+B = summation over i and j (Pij * Bi * Bj)
+
+Where the Pij are input control points, the Bi and Bj are just the 
+following bernstein polynomials.
+
+Bernstein polnomial:
+B0 = (1-x)^3;
+B1 = 3x(1-x)^2;
+B2 = 3x^2 (1-x);
+B3 = x^3;
+*/
 LocalGeo BezierPatch::patch_interp(float u, float v){
-	/*Patch is defined in terms of bernstein polynomials
-	We have the patch
-		
-		B = summation over i and j (Pij * Bi * Bj)
-
-	Where the Pij are input control points, the Bi and Bj are just the 
-	following bernstein polynomials.
-
-	Bernstein polnomial
-	B0 = (1-x)^3;
-	B1 = 3x(1-x)^2;
-	B2 = 3x^2 (1-x);
-	B3 = x^3;
-	*/
-
 	//Bernstein polynomials
 	float b_i[4] = {(1-u)*(1-u)*(1-u), 3.0f*u*(1-u)*(1-u), 3*u*u*(1-u), u*u*u};
 	float b_j[4] = {(1-v)*(1-v)*(1-v), 3.0f*v*(1-v)*(1-v), 3*v*v*(1-v), v*v*v};
@@ -73,6 +73,8 @@ LocalGeo BezierPatch::patch_interp(float u, float v){
 ******************************/
 /*
 This method comes from the Lecture 12 - Surfaces pseudocode by James O'Brien.
+It simply evaluates the BezierPatch at each possible (u,v) value starting
+from 0 and moving in a stepsize of @param step.
 */
 void BezierPatch::uniform_subdivide(float step){
 	float epsilon = 0.001f;
@@ -90,6 +92,10 @@ void BezierPatch::uniform_subdivide(float step){
 	make_tri_list_uniform(step);
 }
 
+/*
+Helper method for uniform_subdivide to take in the list of LocalGeo objects
+and then make a list of triangles.
+*/
 void BezierPatch::make_tri_list_uniform(float step){
 	//this function is only valid for the uniform subdivision routine.
 	int row = glm::floor((1 / step) + 1);
@@ -124,13 +130,16 @@ void BezierPatch::make_tri_list_uniform(float step){
 /*******************************
 * Adaptive Subdivision Methods *
 *******************************/
+/*
+Start with the point u = 0,1 and v = 0,1. Make two
+triangles out of these four points. Then add values 
+for u and v depending on how the flat portion compares 
+to the bezier patch. Uses @param tol to determine if 
+the triangle approximates the bezier surface well enough.
+We also implement a max depth of 5 for subdivision in
+order to not loop infinitely if tolerance is never met.
+*/
 void BezierPatch::adaptive_subdivide(float tol){
-	/*start with the point u = 0,1 and v = 0,1. Make two
-	triangles out of these four points. Then add values 
-	for u and v depending on how the flat portion compares 
-	to the bezier patch.
-	*/
-
 	LocalGeo current_geo;
 	const int max_iterations = 5;
 	int iterations_left;
@@ -142,12 +151,13 @@ void BezierPatch::adaptive_subdivide(float tol){
 		}
 	}
 
-	//two triangles, so just make queue manually. We insert
+	//We have two triangles, so just make queue manually. We insert
 	//a triangle into tri_list once it meets the tolerance requirement
 
 	Triangle tri1(geo_list[0],geo_list[2],geo_list[1],max_iterations);
 	Triangle tri2(geo_list[1],geo_list[2],geo_list[3],max_iterations);
 
+	//Add triangles that need to be checked to the queue.
 	tri_queue.push(tri1);
 	tri_queue.push(tri2);
 
@@ -162,7 +172,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 	float distance;
 
 	while (!tri_queue.empty()){
-		//pop tri. Test it. Either, add to tri list, or subdivide and add to queue.
+		//pop triangle. Test it for flatness. Either, add to tri list, or subdivide and add to queue.
 		Triangle current_tri = tri_queue.front();
 		tri_queue.pop();
 		iterations_left = current_tri.divisions_remaining;
@@ -173,7 +183,7 @@ void BezierPatch::adaptive_subdivide(float tol){
 		//check split on edge a to b
 		a = current_tri.a;
 		b = current_tri.b;
-		
+
 		uv_value = .5f*(a.param_value+b.param_value); //interpolate param value
 		ab_midpoint = a.point+(.5f*(b.point-a.point));
 		ab_geo = patch_interp(uv_value[0],uv_value[1]);

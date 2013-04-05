@@ -31,7 +31,7 @@ public:
 	void adaptive_subdivide(float);
 
 private:
-	void make_tri_list_uniform(float);
-	queue<Triangle> tri_queue; //hold triangles that need to be checked for subdivision.
+	void make_tri_list_uniform(float); //helper method for uniform subdivision
+	queue<Triangle> tri_queue; //holds triangles that need to be checked for subdivision.
 };
 

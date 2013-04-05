@@ -16,6 +16,8 @@ Notes:
 - We used blender (open source 3D modeling software) to create the monkey.obj and sphere.obj.
 - We got the heart.obj file from the blender repository (link on website).
 - we got the heart.bez file from (whereever zack got it).
+- Some code is borrowed from previous assignments. Specifcally, much of the OpenGL is from Assignment 0 and 1.
+  The file parser is mostly copied from Assignment 2.
 
 Extra Features:
 

@@ -28,6 +28,9 @@ using namespace std;
 
 class Viewport;
 
+/*
+Simple class to store width and height.
+*/
 class Viewport {
 public:
 	int w, h; // width and height
@@ -39,7 +42,7 @@ public:
 Viewport	viewport;
 Scene scene;
 
-float PI = 3.1415926;
+float PI = 3.1415926; //used to help map curvatures into the range [-1,1].
 
 const float OBJECT_STEP = .15; //The amount the translation matrix is changed.
 const float OBJECT_ROT = 5.0f; //The amount the rotation matrix is changed(5.0 degrees).
@@ -55,20 +58,24 @@ float MIN_FOV = 10.0f;
 float HORIZONTAL_ROT = 0; //The amount to rotate the object by horizontally (in degrees)
 float VERTICAL_ROT = 0; //Vertically.
 
-bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determine type of shading.
+bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determine type of shading/model.
 	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON, HIDDEN_LINE_ON;
 
 bool OBJ_ON = false;; // If an obj file is given as input.
 bool OBJ_NORM = true; // If vertex normals exist in obj file.
-vector<Triangle*> tri_vec; // Vector of triangles from obj file;
-vector<vector<Triangle*> > connected_triangles; //for index i, we have a list of all triangles that use vertex i.
+vector<Triangle*> tri_vec; //Vector of triangles from obj file;
 
-int COLOR_NUM = 0; // Counter to toggle between colors
+vector<vector<Triangle*> > connected_triangles; /*for index i, we have a list of all triangles that use vertex i.
+This vector is used to figure out which triangles share a particular point. We need this to get an apprxomation
+of the gaussian curvature.*/
+
+int COLOR_NUM = 0; // Counter to cycle between colors
 vector<glm::vec3> COLOR_ARRAY; // Array of color constants
 
 /*
 When toggling between shading modes, this method is called to turn all shading modes off.
-Then we can turn on only the single shading mode we want.
+Then we can turn on only the single shading mode we want. This prevents us from entering
+the wrong if statement if the user has turned on multiple shading modes.
 */
 void reset_shading_mode(){
 	WIREFRAME_ON = false;
@@ -240,18 +247,21 @@ void keyPressed(unsigned char key, int x, int y) {
 
 		break;
 	case '=':
+		//Zoom in
 		if (ZOOM_FACTOR*FOV>MIN_FOV){
 			ZOOM_FACTOR -= ZOOM_STEP;
 		}
 
 		break;
 	case '+':
+		//Also zoom in, when shift is pressed with '=' key.
 		if (ZOOM_FACTOR*FOV>MIN_FOV){
 			ZOOM_FACTOR -= ZOOM_STEP;
 		}
 
 		break;
 	case '-':
+		//zoom out
 		if(ZOOM_FACTOR*FOV<MAX_FOV){
 			ZOOM_FACTOR += ZOOM_STEP;
 		}
@@ -354,6 +364,9 @@ void keySpecial(int key, int x, int y){
 	}
 }
 
+/*
+Re-renders the scene if the user has changed the size of the screen.
+*/
 void myReshape(int w, int h) {
 	viewport.w = w;
 	viewport.h = h;
