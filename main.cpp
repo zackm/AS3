@@ -687,7 +687,7 @@ int main(int argc, char* argv[]){
 			vector<glm::vec3> vert_list;
 			vector<glm::vec3> norm_list;
 
-			// fill first position for proper numbering
+			// fill first position for proper numbering, since obj parsing starts at  instead of 0.
 			vert_list.push_back(glm::vec3(0,0,0));
 			norm_list.push_back(glm::vec3(0,0,0));
 			vector<Triangle*> filler_tri;
@@ -744,6 +744,7 @@ int main(int argc, char* argv[]){
 					norm_list.push_back(glm::vec3(x,y,z));
 				}
 
+				//Multiple kinds of face formats. This handles a few of them.
 				else if(!splitline[0].compare("f")) {
 					int a_point,b_point,c_point,a_point_norm,b_point_norm,c_point_norm;
 					glm::vec3 a,b,c;
@@ -805,6 +806,7 @@ int main(int argc, char* argv[]){
 						c_point = atoi(splitline[3].c_str());
 					}
 
+					//Make the points of triangle a,b,c.
 					a = vert_list[a_point];
 					b = vert_list[b_point];
 					c = vert_list[c_point];
@@ -819,23 +821,27 @@ int main(int argc, char* argv[]){
 						b_norm.x = 0,b_norm.y = 0,b_norm.z = 0;
 						c_norm.x = 0,c_norm.y = 0,c_norm.z = 0;
 					}
+
+					//Create the LocalGeo for the points.
 					LocalGeo a_geo(a,a_norm);
 					LocalGeo b_geo(b,b_norm);
 					LocalGeo c_geo(c,c_norm);
 
+					//Make pointer to this new triangle.
 					Triangle* new_tri = new Triangle(a_geo,b_geo,c_geo,a_point,b_point,c_point);
 
-					//resize vector
+					//resize vector. Obj files don't necessarily tell you how many faces there are going to be.
 					float n = glm::max(a_point,glm::max(b_point,c_point));
 					if(n+1>connected_triangles.size()){
 						connected_triangles.resize(n+1); //+1 because numbering for obj starts at 1.
 					}
 
-					//update triangles to reflect shared vertices
+					//update connected triangles to reflect shared vertices.
 					connected_triangles[a_point].push_back(new_tri);
 					connected_triangles[b_point].push_back(new_tri);
 					connected_triangles[c_point].push_back(new_tri);
 
+					//Add pointer to list of all triangles.
 					tri_vec.push_back(new_tri);
 				}
 
@@ -872,10 +878,15 @@ int main(int argc, char* argv[]){
 		if (!OBJ_NORM) {
 			cout<<"No normals detected. View in wireframe mode only."<<endl;
 		}else{
-			//at this point, should have a vector of vector of connected triangles. We need to figure out
-			//the gaussian curvature for each vertex on each triangle. The gaussian curvature can be set for 
-			//each vertex. We will use the normals to get the approximation.
-			vector<Triangle*> shared_triangles;
+			/*at this point, we have a vector of vector of connected triangles. We need to figure out
+			the gaussian curvature for each vertex on each triangle. The gaussian curvature can be set for 
+			each vertex. We use the gaussian sphere approximation; ie, for each vertex, we sum up the area
+			of the triangles that use that vertex, and we sum up the spherical triangle area for the normals
+			similarly. Then, we do total_sphere_area/total_area. This converges to the gaussian curvature
+			if we use signed area, and we take the triangles to approach an area of 0. If we use small triangles
+			and unsigned area, we get an approximation to the unsigned gaussian curvature.
+			*/
+			vector<Triangle*> shared_triangles;//list of triangles which share a vertex.
 			Triangle* temp_tri;
 			float curvature, numerator, denom;
 
@@ -916,7 +927,7 @@ int main(int argc, char* argv[]){
 		}
 
 		float subdivision_param = atof(argv[2]); //takes on different meaning depending on whether using uniform or adapative (size vs error)
-		scene.step = subdivision_param;
+		scene.step = scene.tolerance = subdivision_param;
 
 		if (argc > 3){
 			use_adaptive = true;
@@ -954,12 +965,13 @@ int main(int argc, char* argv[]){
 				}
 
 				else if(splitline.size()==1){
-					//a single number input, probably in the first line
+					//a single number input, total number of patches.
 					max_patches = atoi(splitline[0].c_str());
 					current_patch++;
 				}
 
 				else if(splitline.size() > 1) {
+					//The list of four vertices.
 					glm::vec3 one(atof(splitline[0].c_str()),atof(splitline[1].c_str()),atof(splitline[2].c_str()));
 					glm::vec3 two(atof(splitline[3].c_str()),atof(splitline[4].c_str()),atof(splitline[5].c_str()));
 					glm::vec3 three(atof(splitline[6].c_str()),atof(splitline[7].c_str()),atof(splitline[8].c_str()));
@@ -991,6 +1003,7 @@ int main(int argc, char* argv[]){
 		cout<<"Total number of triangles to render: "<<scene.number_of_triangles<<'\n'<<endl;
 	}
 
+	//uses max and min in scene to set the bounding sphere and camera location, look_at, up vector.
 	scene.set_camera_pos();
 
 	glutInit(&argc, argv);
