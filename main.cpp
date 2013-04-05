@@ -57,9 +57,11 @@ float VERTICAL_ROT = 0; //Vertically.
 
 bool WIREFRAME_ON, SMOOTH_SHADING_ON,MEAN_CURVATURE_ON, //Booleans which determine type of shading.
 	GAUSS_CURVATURE_ON,MAX_CURVATURE_ON,MIN_CURVATURE_ON, HIDDEN_LINE_ON;
+
 bool OBJ_ON = false;; // If an obj file is given as input.
 bool OBJ_NORM; // If vertex normals exist in obj file.
-vector<Triangle> tri_vec; // Vector of triangles from obj file;
+vector<Triangle*> tri_vec; // Vector of triangles from obj file;
+vector<vector<Triangle*>> connected_triangles; //for index i, we have a list of all triangles that use vertex i.
 
 int COLOR_NUM = 0; // Counter to toggle between colors
 vector<glm::vec3> COLOR_ARRAY; // Array of color constants
@@ -186,13 +188,11 @@ void keyPressed(unsigned char key, int x, int y) {
 		break;
 	case 'g':
 		//toggle between gauss and mean curvature. Only one can be on at a time.
-		if(!OBJ_ON){
-			if(GAUSS_CURVATURE_ON){
-				reset_shading_mode();
-			}else{
-				reset_shading_mode();
-				GAUSS_CURVATURE_ON = true;
-			}
+		if(GAUSS_CURVATURE_ON){
+			reset_shading_mode();
+		}else{
+			reset_shading_mode();
+			GAUSS_CURVATURE_ON = true;
 		}
 
 		break;
@@ -395,13 +395,14 @@ void myDisplay() {
 
 	// Polygon drawing for obj files
 	if (OBJ_ON) {
-		Triangle tri;
+		Triangle* tri;
 		for (int i = 0; i < tri_vec.size(); i++) {
 			tri = tri_vec[i];
 			LocalGeo a,b,c;
-			a = tri.a;
-			b = tri.b;
-			c = tri.c;
+			a = (*tri).a;
+			b = (*tri).b;
+			c = (*tri).c;
+
 			if (WIREFRAME_ON){
 				if(HIDDEN_LINE_ON){
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -448,7 +449,17 @@ void myDisplay() {
 					glPolygonMode(GL_FRONT, GL_FILL); // fill mode
 					glPolygonMode(GL_BACK, GL_FILL);
 				}
-			} else{
+			}else if(GAUSS_CURVATURE_ON && OBJ_NORM){
+				glDisable(GL_LIGHTING);
+
+				glBegin(GL_POLYGON);
+
+				curvature_shading(a.gaussian_curvature,a.point,a.normal);
+				curvature_shading(b.gaussian_curvature,b.point,b.normal);
+				curvature_shading(c.gaussian_curvature,c.point,c.normal);
+
+				glEnd();
+			}else{
 				glClearColor (0.0, 0.0, 0.0, 0.0);
 
 				glEnable(GL_LIGHTING);
@@ -686,6 +697,15 @@ int main(int argc, char* argv[]){
 					vert_list.push_back(glm::vec3(x,y,z));
 				}
 
+				else if(!splitline[0].compare("vn")) {
+					// add vertex normal to list
+					OBJ_NORM = true;
+					float x = atof(splitline[1].c_str());
+					float y = atof(splitline[2].c_str());
+					float z = atof(splitline[3].c_str());
+					norm_list.push_back(glm::vec3(x,y,z));
+				}
+
 				else if(!splitline[0].compare("f")) {
 					int a_point,b_point,c_point,a_point_norm,b_point_norm,c_point_norm;
 					glm::vec3 a,b,c;
@@ -764,16 +784,22 @@ int main(int argc, char* argv[]){
 					LocalGeo a_geo(a,a_norm);
 					LocalGeo b_geo(b,b_norm);
 					LocalGeo c_geo(c,c_norm);
-					tri_vec.push_back(Triangle(a_geo,b_geo,c_geo));
-				}
 
-				else if(!splitline[0].compare("vn")) {
-					// add vertex normal to list
-					OBJ_NORM = true;
-					float x = atof(splitline[1].c_str());
-					float y = atof(splitline[2].c_str());
-					float z = atof(splitline[3].c_str());
-					norm_list.push_back(glm::vec3(x,y,z));
+					Triangle* new_tri = new Triangle(a_geo,b_geo,c_geo,a_point,b_point,c_point);
+					//new_tri.a.gaussian_curvature = 1.0f;
+
+					//resize vector
+					float n = glm::max(a_point,glm::max(b_point,c_point));
+					if(n+1>connected_triangles.size()){
+						connected_triangles.resize(n+1); //+1 because numbering for obj starts at 1.
+					}
+
+					//update triangles to reflect shared vertices
+					connected_triangles[a_point].push_back(new_tri);
+					connected_triangles[b_point].push_back(new_tri);
+					connected_triangles[c_point].push_back(new_tri);
+
+					tri_vec.push_back(new_tri);
 				}
 
 				else {
@@ -808,8 +834,58 @@ int main(int argc, char* argv[]){
 		cout<<"Total number of triangles to render: "<<tri_vec.size()<<'\n'<<endl;
 		if (!OBJ_NORM) {
 			cout<<"No normals detected. View in wireframe mode only."<<endl;
-		}
+		}else{
+			//at this point, should have a vector of vector of connected triangles. We need to figure out
+			//the gaussian curvature for each vertex on each triangle. The gaussian curvature can be set for 
+			//each vertex. We will use the normals to get the approximation.
+			vector<Triangle*> shared_triangles;
+			Triangle* temp_tri;
+			float curvature = 0.0f;
 
+			for (int i = 0; i<connected_triangles.size(); i++){
+				float curvature = 0.0f;
+				shared_triangles = connected_triangles[i];
+				for (int j = 0; j<shared_triangles.size(); j++){
+					temp_tri = shared_triangles[j];
+
+					//area of triangle of points divided by area of triangle formed from points+normal.
+					glm::vec3 vec_u = (*temp_tri).b.point - (*temp_tri).a.point;
+					glm::vec3 vec_v = (*temp_tri).c.point - (*temp_tri).a.point;
+					glm::vec3 cross_prod_points = glm::cross(vec_u,vec_v);
+					//cout<<cross_prod_points[0]<<','<<cross_prod_points[1]<<','<<cross_prod_points[2]<<endl;
+					float area_points = glm::dot(cross_prod_points,cross_prod_points);
+					
+
+					//vec_u = vec_u+(*temp_tri).b.normal-(*temp_tri).a.normal;
+					//vec_v = vec_v+(*temp_tri).c.normal-(*temp_tri).a.normal;
+					//glm::vec3 cross_prod_normals = glm::cross(vec_u,vec_v);
+
+					glm::vec3 vec_alpha,vec_beta,vec_gamma;
+					vec_alpha = (*temp_tri).b.normal-(*temp_tri).a.normal;
+					vec_beta = (*temp_tri).c.normal-(*temp_tri).a.normal;
+					vec_gamma = (*temp_tri).c.normal-(*temp_tri).b.normal;
+
+					float a,b,c,angle_1,angle_2,angle_3;
+
+					//using spherical law of cosines 
+					a = glm::acos(glm::dot((*temp_tri).b.normal,(*temp_tri).c.normal));
+					b = glm::acos(glm::dot((*temp_tri).a.normal,(*temp_tri).c.normal));
+					c = glm::acos(glm::dot((*temp_tri).b.normal,(*temp_tri).a.normal));
+
+					angle_1 = glm::acos(glm::cos(a)-(glm::cos(b)*glm::cos(c)))*PI/180.0f/(glm::sin(b)*glm::sin(c));
+					angle_2 = glm::acos(glm::cos(b)-(glm::cos(a)*glm::cos(c)))*PI/180.0f/(glm::sin(a)*glm::sin(c));
+					angle_3 = glm::acos(glm::cos(c)-(glm::cos(b)*glm::cos(a)))*PI/180.0f/(glm::sin(b)*glm::sin(a));
+
+					float sign_points = 0.0;
+					float area_normals = angle_1+angle_2+angle_3 - PI;
+					curvature = area_normals;///area_points;
+
+					(*temp_tri).a.gaussian_curvature = curvature;
+					(*temp_tri).b.gaussian_curvature = curvature;
+					(*temp_tri).c.gaussian_curvature = curvature;
+				}
+			}
+		}
 	} else {
 		// BEZ File Parsing
 		cout<<"File Format: .bez"<<endl;
@@ -823,7 +899,6 @@ int main(int argc, char* argv[]){
 		scene.step = subdivision_param;
 
 		if (argc > 3){
-			//not checking third paramter. Assuming good input. Should handle case of bad input later
 			use_adaptive = true;
 			cout<<"Subdivision type: "<<"adaptive."<<endl;
 			cout<<"Error tolerance: "<<subdivision_param<<'\n'<<endl;
@@ -832,13 +907,11 @@ int main(int argc, char* argv[]){
 			cout<<"Step size: "<<subdivision_param<<'\n'<<endl;
 		}
 
-		/*
-		parse data from patch file.
-		*/
-		int max_patches = 0;
+		int max_patches = 0; //dont need these two 
 		int current_patch = 0;
 		BezierPatch working_patch;
 
+		//being parsing file
 		ifstream inpfile(filename.c_str());
 		if(!inpfile.is_open()) {
 			cout << "Unable to open file." << endl;
