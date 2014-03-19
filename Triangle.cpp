@@ -1,5 +1,7 @@
 #include "Triangle.h"
 
+
+
 Triangle::Triangle(LocalGeo x,LocalGeo y, LocalGeo z){
 	a = x;
 	b = y;
@@ -63,6 +65,14 @@ void Triangle::set_areas(){
 
 	glm::vec3 cross_prod = glm::cross(vec1,vec2);
 	area = .5f*glm::sqrt(glm::dot(cross_prod,cross_prod));
+	
+	float orientation = 1.0;
+
+	if (cross_prod[2]<0){
+		orientation = -1.0;
+	}
+
+	area = area * orientation;
 
 	//Now from normals (ie points on gauss sphere), calculate the triangle area
 	float a_temp,b_temp,c_temp,alpha,beta,gamma;
@@ -80,6 +90,21 @@ void Triangle::set_areas(){
 	beta = glm::acos((glm::cos(b_temp)-(glm::cos(a_temp)*glm::cos(c_temp)))/(glm::sin(a_temp)*glm::sin(c_temp)));
 	gamma = glm::acos((glm::cos(c_temp)-(glm::cos(b_temp)*glm::cos(a_temp)))/(glm::sin(b_temp)*glm::sin(a_temp)));
 
+
 	//This follows from Gauss-Bonnet formula for geodesic triangles on sphere.
 	sphere_area = alpha+beta+gamma-PI;
+
+	float gauss_orientation = 1.0;
+
+	vec1 = b.normal - a.normal;
+	vec2 = c.normal - a.normal;
+
+	cross_prod = glm::cross(vec1,vec2);
+
+	if (cross_prod[2]<0){
+		gauss_orientation = -1.0;
+	}
+
+	sphere_area = sphere_area * gauss_orientation;
+
 }

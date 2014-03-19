@@ -94,7 +94,7 @@ takes values in the range -inf to inf, we map to the range -1 to 1 by the functi
 (2/PI) * atan(curvature) in order to color.
 */
 void curvature_shading(float curvature,glm::vec3 point, glm::vec3 vector){
-
+	//curvature = curvature * 20.0;
 	float red,blue;
 	if (curvature>0.0f){
 		red = 0.0f;
@@ -895,17 +895,42 @@ int main(int argc, char* argv[]){
 				denom = 0.0f;
 				shared_triangles = connected_triangles[i];
 
+				float temp_denom = 0;
+				float temp_numer = 0;
+
+				numerator = 0.0;
+				denom = 0.0;
+
 				//first loop is to add up all contributing curvatures
 				for (int j = 0; j<shared_triangles.size(); j++){
 					temp_tri = shared_triangles[j];
-					numerator += (*temp_tri).sphere_area;
-					denom += (*temp_tri).area;
+					
+					//numerator += (*temp_tri).sphere_area;
+					//denom += (*temp_tri).area;
+
+
+					temp_denom += (*temp_tri).area;
+					temp_numer += (*temp_tri).sphere_area;
+					denom += glm::abs((*temp_tri).area);
+					numerator += glm::abs((*temp_tri).sphere_area);
 				}
 
-				if(denom>0.0f){
+				if (temp_denom<0){
+					denom = denom * (-1.0);
+				}
+
+				if (temp_numer<0){
+					numerator = numerator * (-1.0);
+				}
+
+				if(glm::abs(denom)> 1e-15){
 					curvature = numerator/denom;
 				}else{
-					curvature = numeric_limits<int>::max();
+					if ( glm::sign(denom) == glm::sign( numerator)){
+						curvature = numeric_limits<double>::infinity();
+					}else{
+						curvature = -1 * numeric_limits<double>::infinity();
+					}
 				}
 
 				LocalGeo* temp_geo;
