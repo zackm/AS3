@@ -34,4 +34,7 @@ public:
     void subdivide_patch(bool);
     void set_min_max();
 	void set_camera_pos();
+	void output_obj_file(string);
+	bool in_list(vector<glm::vec3>, glm::vec3);
+	int position_in_list(vector<glm::vec3>, glm::vec3);
 };

@@ -905,14 +905,14 @@ int main(int argc, char* argv[]){
 				for (int j = 0; j<shared_triangles.size(); j++){
 					temp_tri = shared_triangles[j];
 					
-					//numerator += (*temp_tri).sphere_area;
-					//denom += (*temp_tri).area;
+					numerator += (*temp_tri).sphere_area;
+					denom += (*temp_tri).area;
 
 
-					temp_denom += (*temp_tri).area;
-					temp_numer += (*temp_tri).sphere_area;
-					denom += glm::abs((*temp_tri).area);
-					numerator += glm::abs((*temp_tri).sphere_area);
+					//temp_denom += (*temp_tri).area;
+					//temp_numer += (*temp_tri).sphere_area;
+					//denom += glm::abs((*temp_tri).area);
+					//numerator += glm::abs((*temp_tri).sphere_area);
 				}
 
 				if (temp_denom<0){
@@ -923,15 +923,19 @@ int main(int argc, char* argv[]){
 					numerator = numerator * (-1.0);
 				}
 
-				if(glm::abs(denom)> 1e-15){
-					curvature = numerator/denom;
-				}else{
-					if ( glm::sign(denom) == glm::sign( numerator)){
-						curvature = numeric_limits<double>::infinity();
-					}else{
-						curvature = -1 * numeric_limits<double>::infinity();
-					}
-				}
+				curvature = numerator/denom;
+
+				//if(glm::abs(denom)> 1e-15){
+				//	curvature = numerator/denom;
+				//}else if(glm::abs(numerator)<1e-15){
+				//	curvature = 0.0;
+				//}else{
+				//	if (glm::sign(denom) == glm::sign( numerator)){
+				//		curvature = numeric_limits<double>::infinity();
+				//	}else{
+				//		curvature = -1 * numeric_limits<double>::infinity();
+				//	}
+				//}
 
 				LocalGeo* temp_geo;
 				//second loop is to set the correct local geo's curvature value.
@@ -1026,6 +1030,9 @@ int main(int argc, char* argv[]){
 		cout<<"Finished subdividing patches. Setting scene and camera.\n"<<endl;
 
 		cout<<"Total number of triangles to render: "<<scene.number_of_triangles<<'\n'<<endl;
+
+		//output to obj
+		scene.output_obj_file(filename);
 	}
 
 	//uses max and min in scene to set the bounding sphere and camera location, look_at, up vector.

@@ -2,6 +2,10 @@
 
 #include <limits>
 
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 Scene::Scene(){
 	number_of_triangles = 0;
 	glm::vec3 camera_pos(0,0,0);
@@ -105,4 +109,125 @@ void Scene::set_camera_pos(){
 	camera_look.z = center.z;
 	camera_up.x = camera_up.z = 0;
 	camera_up.y = 1.0f;
+}
+
+void Scene::output_obj_file(string filename){
+	string temp_file = "testing.obj";
+
+	int n = patch_list.size();
+
+	vector<LocalGeo> geo_list; //list of full geometry
+    vector<Triangle> tri_list; //represents the final list of fully subdivided triangles
+
+	//put all triangles into a single list
+	vector<Triangle> full_tri_list;
+	for (int i =0 ; i<n ; i++){
+		BezierPatch cur_patch = patch_list[i];
+
+		for (int j = 0; j<cur_patch.tri_list.size(); j++){
+			Triangle cur_tri = cur_patch.tri_list[j];
+			full_tri_list.push_back(cur_tri);
+		}
+	}
+
+	//put all points into a single list
+	vector<glm::vec3> full_point_list;
+	vector<glm::vec3> full_normal_list;
+	for (int i=0; i<full_tri_list.size(); i++){
+		Triangle cur_tri = full_tri_list[i];
+
+		LocalGeo a = cur_tri.a;
+
+		if (!in_list(full_point_list, a.point)){
+			full_point_list.push_back(a.point);
+		}
+
+		if (!in_list(full_normal_list, a.normal)){
+			full_normal_list.push_back(a.normal);
+		}
+
+		LocalGeo b = cur_tri.b;
+
+		if (!in_list(full_point_list, b.point)){
+			full_point_list.push_back(b.point);
+		}
+
+		if (!in_list(full_normal_list, b.normal)){
+			full_normal_list.push_back(b.normal);
+		}
+
+		LocalGeo c = cur_tri.c;
+
+		if (!in_list(full_point_list, c.point)){
+			full_point_list.push_back(c.point);
+		}
+
+		if (!in_list(full_normal_list, c.normal)){
+			full_normal_list.push_back(c.normal);
+		}
+
+	}
+
+	//print out all points and normals into file
+	ofstream myfile;
+	myfile.open (temp_file);
+	for (int i = 0; i<full_point_list.size(); i++){
+		glm::vec3 cur_point = full_point_list[i];
+
+		myfile <<"v "<< cur_point[0] << " "<< cur_point[1]<< " " << cur_point[2] << "\n";
+
+	}
+
+	for (int i = 0; i<full_normal_list.size(); i++){
+		glm::vec3 cur_normal = full_normal_list[i];
+
+		myfile <<"vn "<< cur_normal[0] << " "<< cur_normal[1]<< " " << cur_normal[2] << "\n";
+
+	}
+
+
+	//for each triangle, find corresponding point and normal, then print output
+	for (int i = 0; i<full_tri_list.size(); i++){
+		Triangle cur_tri = full_tri_list[i];
+
+		int point_index = position_in_list(full_point_list, cur_tri.a.point);
+		int normal_index = position_in_list(full_normal_list, cur_tri.a.normal);
+
+		myfile << "f " << point_index << "//" << normal_index<<" " ;
+
+		point_index = position_in_list(full_point_list, cur_tri.b.point);
+		normal_index = position_in_list(full_normal_list, cur_tri.b.normal);
+		myfile << point_index << "//" << normal_index<<" ";
+
+		point_index = position_in_list(full_point_list, cur_tri.c.point);
+		normal_index = position_in_list(full_normal_list, cur_tri.c.normal);
+		myfile << point_index << "//" << normal_index<<"\n";
+	}
+
+	myfile.close();
+
+}
+
+bool Scene::in_list(vector<glm::vec3> list, glm::vec3 point){
+
+	for (int i = 0; i<list.size(); i++){
+		glm::vec3 cur = list[i];
+
+		if (cur==point) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+int Scene::position_in_list(vector<glm::vec3> list, glm::vec3 point){
+
+	for (int i = 0; i<list.size(); i++){
+		glm::vec3 cur = list[i];
+
+		if (cur==point) {
+			return i+1;
+		}
+	}
 }
