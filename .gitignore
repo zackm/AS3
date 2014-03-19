@@ -28,7 +28,6 @@ glut32.dll
 #VS files
 *.sdf
 *.opensdf
-*.sln
 *.suo
 *.vcxproj
 *.filters
