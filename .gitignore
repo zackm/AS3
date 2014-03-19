@@ -25,14 +25,6 @@ glut32.dll
 #documents
 *.pdf
 
-#VS files
-*.sdf
-*.opensdf
-*.suo
-*.vcxproj
-*.filters
-*.user
-
 #glut
 glut.def
 
