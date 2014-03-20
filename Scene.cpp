@@ -14,6 +14,7 @@ Scene::Scene(){
 	glm::vec3 min(0,0,0);
 	glm::vec3 max(0,0,0);
 	tolerance = step = 0.0f;
+
 }
 
 /*
@@ -136,35 +137,53 @@ void Scene::output_obj_file(string filename){
 	for (int i=0; i<full_tri_list.size(); i++){
 		Triangle cur_tri = full_tri_list[i];
 
+		//LocalGeo a = cur_tri.a;
+
+		//if (!in_list(full_point_list, a.point)){
+		//	full_point_list.push_back(a.point);
+		//}
+
+		//if (!in_list(full_normal_list, a.normal)){
+		//	full_normal_list.push_back(a.normal);
+		//}
+
+		//LocalGeo b = cur_tri.b;
+
+		//if (!in_list(full_point_list, b.point)){
+		//	full_point_list.push_back(b.point);
+		//}
+
+		//if (!in_list(full_normal_list, b.normal)){
+		//	full_normal_list.push_back(b.normal);
+		//}
+
+		//LocalGeo c = cur_tri.c;
+
+		//if (!in_list(full_point_list, c.point)){
+		//	full_point_list.push_back(c.point);
+		//}
+
+		//if (!in_list(full_normal_list, c.normal)){
+		//	full_normal_list.push_back(c.normal);
+		//}
+
 		LocalGeo a = cur_tri.a;
 
-		if (!in_list(full_point_list, a.point)){
-			full_point_list.push_back(a.point);
-		}
+		full_point_list.push_back(a.point);
 
-		if (!in_list(full_normal_list, a.normal)){
-			full_normal_list.push_back(a.normal);
-		}
+		full_normal_list.push_back(a.normal);
 
 		LocalGeo b = cur_tri.b;
 
-		if (!in_list(full_point_list, b.point)){
-			full_point_list.push_back(b.point);
-		}
+		full_point_list.push_back(b.point);
 
-		if (!in_list(full_normal_list, b.normal)){
-			full_normal_list.push_back(b.normal);
-		}
+		full_normal_list.push_back(b.normal);
 
 		LocalGeo c = cur_tri.c;
 
-		if (!in_list(full_point_list, c.point)){
-			full_point_list.push_back(c.point);
-		}
+		full_point_list.push_back(c.point);
 
-		if (!in_list(full_normal_list, c.normal)){
-			full_normal_list.push_back(c.normal);
-		}
+		full_normal_list.push_back(c.normal);
 
 	}
 
@@ -186,22 +205,36 @@ void Scene::output_obj_file(string filename){
 	}
 
 
+	////for each triangle, find corresponding point and normal, then print output
+	//for (int i = 0; i<full_tri_list.size(); i++){
+	//	Triangle cur_tri = full_tri_list[i];
+
+	//	int point_index = position_in_list(full_point_list, cur_tri.a.point);
+	//	int normal_index = position_in_list(full_normal_list, cur_tri.a.normal);
+
+	//	myfile << "f " << point_index << "//" << normal_index<<" " ;
+
+	//	point_index = position_in_list(full_point_list, cur_tri.b.point);
+	//	normal_index = position_in_list(full_normal_list, cur_tri.b.normal);
+	//	myfile << point_index << "//" << normal_index<<" ";
+
+	//	point_index = position_in_list(full_point_list, cur_tri.c.point);
+	//	normal_index = position_in_list(full_normal_list, cur_tri.c.normal);
+	//	myfile << point_index << "//" << normal_index<<"\n";
+	//}
+
 	//for each triangle, find corresponding point and normal, then print output
 	for (int i = 0; i<full_tri_list.size(); i++){
 		Triangle cur_tri = full_tri_list[i];
 
-		int point_index = position_in_list(full_point_list, cur_tri.a.point);
-		int normal_index = position_in_list(full_normal_list, cur_tri.a.normal);
+		myfile << "f " << cur_tri.a.point[0] << " " << cur_tri.a.point[1] << " " << cur_tri.a.point[2] << " ";
+		myfile << cur_tri.a.normal[0] << " " << cur_tri.a.normal[1] << " " << cur_tri.a.normal[2] << " "; 
 
-		myfile << "f " << point_index << "//" << normal_index<<" " ;
+		myfile << cur_tri.b.point[0] << " " << cur_tri.b.point[1] << " " << cur_tri.b.point[2] << " ";
+		myfile << cur_tri.b.normal[0] << " " << cur_tri.b.normal[1] << " " << cur_tri.b.normal[2] << " "; 
 
-		point_index = position_in_list(full_point_list, cur_tri.b.point);
-		normal_index = position_in_list(full_normal_list, cur_tri.b.normal);
-		myfile << point_index << "//" << normal_index<<" ";
-
-		point_index = position_in_list(full_point_list, cur_tri.c.point);
-		normal_index = position_in_list(full_normal_list, cur_tri.c.normal);
-		myfile << point_index << "//" << normal_index<<"\n";
+		myfile << cur_tri.c.point[0] << " " << cur_tri.c.point[1] << " " << cur_tri.c.point[2] << " ";
+		myfile << cur_tri.c.normal[0] << " " << cur_tri.c.normal[1] << " " << cur_tri.c.normal[2] << "\n"; 
 	}
 
 	myfile.close();

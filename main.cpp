@@ -102,6 +102,8 @@ void curvature_shading(float curvature,glm::vec3 point, glm::vec3 vector){
 	}else if(curvature<0.0f){
 		red = -2.0f*glm::atan(curvature)/PI;
 		blue = 0.0f;
+		//blue =  2.0f*glm::atan(-curvature)/PI;
+		//red = 0.0;
 	}else{
 		red = 0.0f;
 		blue = 0.0f;
