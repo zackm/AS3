@@ -112,6 +112,101 @@ void Scene::set_camera_pos(){
 	camera_up.y = 1.0f;
 }
 
+void Scene::output_curvatures(vector<Triangle*> full_tri_list){
+
+	vector<LocalGeo> full_geo_list;
+
+	//cout << full_tri_list.size();
+
+	for (int i=0; i<full_tri_list.size(); i++){
+		Triangle cur_tri = (*full_tri_list[i]);
+
+		LocalGeo a = cur_tri.a;
+
+		full_geo_list.push_back(a);
+
+		LocalGeo b = cur_tri.b;
+
+		full_geo_list.push_back(b);
+
+		LocalGeo c = cur_tri.c;
+
+		full_geo_list.push_back(c);
+	}
+
+	string temp_file = "obj_curv.txt";
+
+	ofstream myfile;
+	myfile.open (temp_file);
+	myfile << full_geo_list.size();
+	for (int i = 0; i<full_geo_list.size(); i++){
+		LocalGeo cur_geo = full_geo_list[i];
+
+		myfile << cur_geo.point[0] << " " << cur_geo.point[1] << " " <<cur_geo.point[2] << " ";
+		myfile<< cur_geo.gaussian_curvature << "\n";
+
+	}
+	myfile.close();
+}
+
+void Scene::output_curvatures(){
+
+	vector<Triangle> full_tri_list;
+
+    int n = patch_list.size();
+    //cout<< n;
+
+    vector<LocalGeo> geo_list; //list of full geometry
+    vector<Triangle> tri_list; //represents the final list of fully subdivided triangles
+
+    //put all triangles into a single list
+        
+    for (int i =0 ; i<n ; i++){
+        BezierPatch cur_patch = patch_list[i];
+
+        //cout <<cur_patch.size();
+        for (int j = 0; j<cur_patch.tri_list.size(); j++){
+            Triangle cur_tri = cur_patch.tri_list[j];
+            full_tri_list.push_back(cur_tri);
+        }
+    }
+
+	vector<LocalGeo> full_geo_list;
+
+	//cout << full_tri_list.size();
+
+	for (int i=0; i<full_tri_list.size(); i++){
+		Triangle cur_tri = full_tri_list[i];
+
+		LocalGeo a = cur_tri.a;
+
+		full_geo_list.push_back(a);
+
+		LocalGeo b = cur_tri.b;
+
+		full_geo_list.push_back(b);
+
+		LocalGeo c = cur_tri.c;
+
+		full_geo_list.push_back(c);
+	}
+
+	string temp_file = "bez_curv.txt";
+
+	ofstream myfile;
+	myfile.open (temp_file);
+	myfile << full_geo_list.size();
+	for (int i = 0; i<full_geo_list.size(); i++){
+		LocalGeo cur_geo = full_geo_list[i];
+
+		myfile << cur_geo.point[0] << " " << cur_geo.point[1] << " " <<cur_geo.point[2] << " ";
+		myfile<< cur_geo.gaussian_curvature << "\n";
+
+	}
+	myfile.close();
+
+}
+
 void Scene::output_obj_file(string filename){
 	string temp_file = "testing.obj";
 

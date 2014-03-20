@@ -904,17 +904,41 @@ int main(int argc, char* argv[]){
 				denom = 0.0;
 
 				//first loop is to add up all contributing curvatures
+				if (shared_triangles.size()==0){
+					cout<<shared_triangles.size()<<"\n";
+				}
+				
 				for (int j = 0; j<shared_triangles.size(); j++){
 					temp_tri = shared_triangles[j];
 					
-					numerator += (*temp_tri).sphere_area;
-					denom += (*temp_tri).area;
+					//numerator += (*temp_tri).sphere_area;
+					//denom += (*temp_tri).area;
 
 
-					//temp_denom += (*temp_tri).area;
-					//temp_numer += (*temp_tri).sphere_area;
-					//denom += glm::abs((*temp_tri).area);
-					//numerator += glm::abs((*temp_tri).sphere_area);
+					temp_denom += (*temp_tri).area;
+					temp_numer += (*temp_tri).sphere_area;
+					denom += glm::abs((*temp_tri).area);
+
+					if(denom==0){
+						cout<<denom<<"\n";
+						cout<<((*temp_tri).a.point[0])<<"\n";
+						cout<<((*temp_tri).a.point[1])<<"\n";
+						cout<<((*temp_tri).a.point[2])<<"\n";
+						cout<<((*temp_tri).b.point[0])<<"\n";
+						cout<<((*temp_tri).b.point[1])<<"\n";
+						cout<<((*temp_tri).b.point[2])<<"\n";
+						cout<<((*temp_tri).c.point[0])<<"\n";
+						cout<<((*temp_tri).c.point[1])<<"\n";
+						cout<<((*temp_tri).c.point[2])<<"\n";
+
+						glm::vec3 vec1 = (*temp_tri).b.point - (*temp_tri).a.point;
+						glm::vec3 vec2 = (*temp_tri).c.point - (*temp_tri).a.point;
+
+						glm::vec3 cross = glm::cross(vec1,vec2);
+						cout<<cross[0]<<cross[1]<<cross[2]<<"\n";
+					}
+					
+					numerator += glm::abs((*temp_tri).sphere_area);
 				}
 
 				if (temp_denom<0){
@@ -925,7 +949,15 @@ int main(int argc, char* argv[]){
 					numerator = numerator * (-1.0);
 				}
 
-				curvature = numerator/denom;
+				if (denom==0){
+					cout<<"h\n";
+				}
+
+				if (numerator==0){
+					cout<<"n\n";
+				}
+
+				curvature = numerator/(denom+.001);
 
 				//if(glm::abs(denom)> 1e-15){
 				//	curvature = numerator/denom;
@@ -948,6 +980,8 @@ int main(int argc, char* argv[]){
 				}
 			}
 		}
+		//output curvature values at each vertex
+		scene.output_curvatures(tri_vec);
 	} else {
 		// BEZ File Parsing
 		cout<<"File Format: .bez"<<endl;
@@ -1024,10 +1058,14 @@ int main(int argc, char* argv[]){
 					std::cerr << "Unknown command: " << splitline[0] << std::endl;
 				}
 			}
+
+
 		}
 
 		cout<<"\nFinished parsing input file. Initializing subdivision of patches.\n"<<endl;
 		scene.subdivide_patch(use_adaptive); //does uniform tessellation if use_adaptive is false
+
+		scene.output_curvatures();
 
 		cout<<"Finished subdividing patches. Setting scene and camera.\n"<<endl;
 

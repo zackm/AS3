@@ -35,6 +35,8 @@ public:
     void set_min_max();
 	void set_camera_pos();
 	void output_obj_file(string);
+	void output_curvatures();
+	void output_curvatures(vector<Triangle*>);
 	bool in_list(vector<glm::vec3>, glm::vec3);
 	int position_in_list(vector<glm::vec3>, glm::vec3);
 };

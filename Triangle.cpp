@@ -72,7 +72,8 @@ void Triangle::set_areas(){
 		orientation = -1.0;
 	}
 
-	area = area * orientation;
+	float bias = .01;
+	area = (area + bias)* orientation;
 
 	//Now from normals (ie points on gauss sphere), calculate the triangle area
 	float a_temp,b_temp,c_temp,alpha,beta,gamma;
